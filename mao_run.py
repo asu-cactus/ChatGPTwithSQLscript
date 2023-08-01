@@ -4,7 +4,9 @@ from pymysql.err import OperationalError
 import difflib
 import numpy as np
 from pymysql.err import ProgrammingError
-openai.api_key = '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'
+import json
+openai.api_key = 'xxx'
+
 
 # define database connection
 def create_connection():
@@ -66,7 +68,50 @@ def verify(sql_result, ground_truth):
 
     print("Verification passed. The transformation is correct.")
     return True
+# Function to generate the prompt based on the JSON data and template option
+def generate_prompt(json_file_path, template_option,source_data_name_to_find):
+    # Read the JSON file
+    with open(json_file_path, 'r') as file:
+        data_list = json.load(file)
 
+    # Find the item with the specified Source Data Name
+    data = None
+    for item in data_list:
+        if item["Source Data Name"] == source_data_name_to_find:
+            data = item
+            break
+    if data is None:
+        return f"No data found for Source Data Name: {source_data_name_to_find}"
+    # Extract the relevant information from the JSON data
+    target_data_name = data["Target Data Name"]
+    target_data_schema = data["Target Data Schema"]
+    source_data_name = data["Source Data Name"]
+    source_data_schema = data["Source Data Schema"]
+    contexts = data["Contexts"]
+    target_data_description = data["Target Data Description"]
+    source_data_description = data["Source Data Description"]
+    schema_change_hints = data["Schema Change Hints"]
+    # Generate the prompt based on the template option
+    if template_option == 1:
+        prompt = f"""You are a SQL developer. I want you to finish a task, please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you have to create the first table with the given attribute names, named {source_data_name} {source_data_schema}
+        Insert 5 rows into the source table.
+        Second, you have to make a second table for the given attributes, named {target_data_name}: {target_data_schema}
+        Insert all rows from the first table into the second table."""
+        print(prompt)
+    elif template_option == 2:
+        prompt = f"""You are a SQL developer. I want you to finish a task, please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you have to create the first table with the given attribute names, named {source_data_name} {source_data_schema}. {source_data_description}
+        Insert 5 rows into the source table.
+        Second, you have to make a second table for the given attributes, named {target_data_name}: {target_data_schema}. {target_data_description}
+        Schema Change Hints: {schema_change_hints}
+        Insert all rows from the first table into the second table."""
+    elif template_option == 3:
+        prompt = f"""You are a SQL developer. I want you to finish a task, please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you have to create the first table with the given attribute names, named {source_data_name} {source_data_schema}. {source_data_description}
+        Insert 5 rows into the source table.
+        Second, you have to make a second table for the given attributes, named {target_data_name}: {target_data_schema}. {target_data_description}
+        Schema Change Hints: {schema_change_hints}
+        {contexts}
+        Insert all rows from the first table into the second table."""
+    return prompt
 
 # main script
 def main(template_option):
@@ -79,38 +124,17 @@ def main(template_option):
     # Retrieve the original data from the specified table
     original_data_query = "SELECT * FROM test_origin;"
     original_data = execute_sql(conn, original_data_query)
-    print(original_data)
+    #print(original_data)
     # Retrieve the ground truth from the specified table
     ground_truth_query = "SELECT * FROM test_target"
     ground_truth = execute_sql(conn, ground_truth_query)
-    print(ground_truth)
-
+    #print(ground_truth)
+    json_file_path = 'D:/SQL/ChatGPT Benchmark Datasets.json'
+    # Source Data Name to find
+    source_data_name_to_find = 'Orange and Rockland'
     # Generate the prompt for the chatGPT model
-    if template_option == 1:
-       prompt = """You are a SQL developer. I want you to finish a task, please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you have to create the first table with the given attribute names, named test_1 {date, cerc_templogger_1 }
-Insert 5 rows into the source table.
-Second, you have to make a second table for the given attributes, named test_2: {CST,10, 20, 30, 40, 50}
-Insert all rows from the first table into the second table."""
-
-    elif template_option == 2:
-        prompt = """You are a SQL developer. I want you to finish a task, please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you have to create the first table with the given attribute names, named SourceSchema {date, cerc_templogger_1 }
-Second, you have to make a second table for the given attributes, named Target Schema: {CST,1:1:00, 1:2:00, 1:3:00, 1:4:00, 1:5:00}
-The date column has a timestamp. 
-The cerc_templogger_1 is the logger having each minute temperature value. 
-In the target table, the CST is a date.
-The  1:1:00,	1:2:00,	1:3:00,	1:4:00,	1:5:00 are minutes for temperature from. 
-Insert all rows from the first table into the second table."""
-    elif template_option == 3:
-        prompt = """You are a SQL developer. I want you to finish a task, please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you have to create the first table with the given attribute names, named SourceSchema {date, cerc_templogger_1 }
-Insert 5 rows into the source table.
-Second, you have to make a second table for the given attributes, named Target Schema: {CST,1:1:00, 1:2:00, 1:3:00, 1:4:00, 1:5:00}
-Insert all rows from the first table into the second table. 
-
-Example-1 
-Question
-You are a SQL developer. I want you to finish a task, please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you have to create the first table with the given attribute names, named SourceSchema {Product, Month, Revenue}
-Insert 5 rows into the source table.
-Second, you have to make a second table for the given attributes, named Target Schema: {Product, Jan, Feb,Mar,Apr,May}. Insert all the rows from source to target table."""
+    if template_option == 1 or template_option == 2 or template_option == 3:
+       prompt = generate_prompt(json_file_path, template_option, source_data_name_to_find)
     else:
         print("Invalid template option.")
         return
