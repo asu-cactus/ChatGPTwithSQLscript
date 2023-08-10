@@ -4,14 +4,14 @@ from pymysql.err import OperationalError
 import difflib
 import numpy as np
 from pymysql.err import ProgrammingError
-import sqlite3
-from sqlite3 import Error
+import psycopg2
 import json
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 import csv
+import re
 
-openai.api_key = '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'
+openai.api_key = 'xxx'
 
 def read_csv_file(file_path):
     with open(file_path, 'r') as file:
@@ -19,39 +19,53 @@ def read_csv_file(file_path):
         data = list(reader)
     return data
 
-# define database connection
-def create_connection(db_file):
-    """ create a database connection to the SQLite database
-        specified by the db_file
-    """
-    conn = None
+def create_connection():
+    """ create a database connection to the PostgreSQL database """
     try:
-        conn = sqlite3.connect(db_file)
+        conn = psycopg2.connect(
+            dbname="postgres",
+            user="postgres",
+            password="021111",
+            host="localhost",  # e.g., "localhost"
+            port="5432"   # e.g., "5432"
+        )
         return conn
-    except Error as e:
-        print(e)
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+    return None
+def extract_last_insert_table_name(query):
+    """
+    Extracts the table name from the last INSERT INTO clause in the given SQL query.
+    """
+    matches = re.findall(r"INSERT\s+INTO\s+(\w+)", query, re.IGNORECASE)
+    if matches:
+        return matches[-1]
+    return None
 
-    return conn
-
-def upload_data_to_database(conn, table_name, data):
+def execute_sql(conn, query):
     cursor = conn.cursor()
-    placeholders = ', '.join(['?'] * len(data[0]))
-    for row in data:
-        cursor.execute(f"INSERT INTO {table_name} VALUES ({placeholders})", row)
-    conn.commit()
-
-def execute_sql(conn, sql):
-    """ Execute an SQL statement """
     try:
-        cursor = conn.cursor()
-        cursor.execute(sql)
+        cursor.execute("BEGIN;")
+        cursor.execute(query)
+        # Assuming you want to commit after every SQL execution for simplicity
+        conn.commit()
 
-        # If you're fetching data, return the fetched data
-        return cursor.fetchall()
-    except Error as e:
-        print(e)
+        # Check if the operation is not a SELECT statement
+        if not query.strip().upper().startswith("SELECT"):
+            target_table = extract_last_insert_table_name(query)
+            if target_table:
+                # Fetch results from the last inserted table
+                cursor.execute(f"SELECT * FROM {target_table};")
+                result = cursor.fetchall()
+            else:
+                result = "Table name not identified from last INSERT INTO query."
+        else:
+            result = cursor.fetchall()
 
-
+        return result
+    except psycopg2.Error as e:
+        conn.rollback()  # Rollback the transaction on error
+        return f"Error: {e.pgerror}"
 
 # interact with chatGPT model
 def chat_with_gpt(prompt):
@@ -100,11 +114,10 @@ def calculate_similarity(column_a, column_b, similarity_type="jaccard"):
     print("Verification passed. The transformation is correct.")
     return True
 """
-def  validation(sql_result, ground_truth):
-    # Checking the number of columns and rows
+def validation(sql_result, ground_truth):
     if len(sql_result) != len(ground_truth) or len(sql_result[0]) != len(ground_truth[0]):
         print("Different number of rows or columns in the results and ground truth.")
-        return False
+        return False, []
 
     # Initialize a list to store similarity scores
     similarity_scores = []
@@ -120,14 +133,23 @@ def  validation(sql_result, ground_truth):
         # Append the similarity score for this column
         similarity_scores.append(similarity_score)
 
-        # Additional checks for exact column name and values can be added here if needed
+    print("Similarity scores for this iteration:", similarity_scores)
 
-    # Writing the similarity scores to a file
-    with open('similarity_scores.txt', 'w') as file:
-        for score in similarity_scores:
-            file.write(f"{score}\n")
+    # Returning both the result of strict validation and the similarity scores
+    return strict_validation(sql_result, ground_truth), similarity_scores
 
-    print("Verification passed. Similarity scores recorded in similarity_scores.txt.")
+
+def strict_validation(sql_result, ground_truth):
+    if len(sql_result) != len(ground_truth):
+        print("Different number of rows in the results and ground truth.")
+        return False
+
+    for row_index, (sql_row, truth_row) in enumerate(zip(sql_result, ground_truth)):
+        if sql_row != truth_row:
+            print(f"Row {row_index} does not match. SQL Result: {sql_row}, Ground Truth: {truth_row}")
+            return False
+
+    print("Verification passed. The transformation is correct.")
     return True
 
 def generate_prompt(json_file_path, template_option,source_data_name_to_find):
@@ -148,12 +170,12 @@ def generate_prompt(json_file_path, template_option,source_data_name_to_find):
     target_data_schema = data["Target Data Schema"]
     source_data_name = data["Source Data Name"]
     source_data_schema = data["Source Data Schema"]
-    sammples = data["5 Samples of Source Data"]
+    samples = data["5 Samples of Source Data"]
     target_data_description = data["Target Data Description"]
     source_data_description = data["Source Data Description"]
     schema_change_hints = data["Schema Change Hints"]
     notes = data["Remark or Note"]
-    ground_truth = data["GroundTruth SQL"]
+    ground_truth = data["Ground Truth SQL"]
     # Generate the prompt based on the template option
     if template_option == 1:
         prompt = f"""You are a SQL developer. I want you to finish a task, please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you have to create the first table with the given attribute names, named SourceSchema {source_data_schema}
@@ -169,8 +191,8 @@ def generate_prompt(json_file_path, template_option,source_data_name_to_find):
         Insert all rows from the first table into the second table."""
     elif template_option == 3:
         prompt = f"""You are a SQL developer. I want you to finish a task, using the || operator for string concatenation, please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you have to create the first table with the given attribute names, named {source_data_name} {source_data_schema}. {source_data_description}
-        examples of source data: {sammples}
-        Insert 2 rows into the source table.
+        examples of source data: {samples}
+        Insert 1 rows into the source table.
         Second, you have to make a second table for the given attributes, named TargetSchema: {target_data_schema}. {target_data_description}
         Schema Change Hints: {schema_change_hints}
         Notes: {notes}
@@ -181,34 +203,24 @@ def generate_prompt(json_file_path, template_option,source_data_name_to_find):
 #5 Samples of Source Data: {sammples}
 # main script
 def main(template_option):
-    conn = create_connection("C:/Users/23879/gpt.db")
-
-
-    # Upload the source data to the origin table
-    #upload_data_to_database(conn,'SourceSchema' , source_data)
-
-
-
-    # Retrieve the original data from the specified table
-    original_data_query = "SELECT * FROM SourceSchema;"
-    original_data = execute_sql(conn, original_data_query)
-
-    # Retrieve the ground truth from the specified table
-    ground_truth_query = "SELECT * FROM Source_Schema"
-    ground_truth = execute_sql(conn, ground_truth_query)
+    conn = create_connection()
 
 
     json_file_path = 'D:/SQL/ChatGPT Benchmark Datasets.json'
     # Source Data Name to find
-    source_data_name_to_find = 'EVERSOURCE-NSTAR:2014-load-profile-ema'
+    source_data_name_to_find = 'Orange and Rockland'
     # Generate the prompt for the chatGPT model
     if template_option == 1 or template_option == 2 or template_option == 3:
        prompt, ground_truth_query = generate_prompt(json_file_path, template_option, source_data_name_to_find)
     else:
         print("Invalid template option.")
         return
-
+    # Create a list to store similarity scores of each iteration
+    all_similarity_scores = []
     iteration_count = 0
+    truth_result = execute_sql(conn, ground_truth_query)
+    print("TRUTH Result:")
+    print(truth_result)
     while True:
         iteration_count += 1
         if iteration_count > 5:
@@ -218,29 +230,35 @@ def main(template_option):
         gpt_output = chat_with_gpt(prompt)
         print(gpt_output)
 
-        
+
         if "Error:" in gpt_output:
             prompt += " GPT Error: " + gpt_output
-            continue
+            break
 
         # Execute the SQL query on the specified table
-        print(gpt_output)
         sql_result = execute_sql(conn, gpt_output)
-        truth_result = execute_sql(conn, ground_truth_query)
+        print("SQL Result:")
         print(sql_result)
-        # Compare the SQL result with the ground truth
-        is_correct = validation(sql_result, truth_result)
-        print(is_correct)
-        if isinstance(sql_result, str):
-            prompt += " SQL Error: " + sql_result
+        if "Error:" in sql_result:
+            prompt += " SQL Error: " + sql_result + " Please try again and show me the SQL query only."
             continue
+
+        is_correct, similarity_scores = validation(sql_result, truth_result)
+        all_similarity_scores.append(similarity_scores)
+        print(is_correct)
 
         if is_correct:
             print("Successful SQL execution with correct result.")
             break
         else:
-            prompt = "The SQL query can run,  but the result is like the following, which is wrong: " + str(sql_result)
+            prompt = "The SQL query can run,  but the result is like the following, which is wrong: " + str(sql_result) + " Please try again and show me the SQL query only."
             continue
+
+    with open('all_similarity_scores.txt', 'w') as file:
+        for iteration_scores in all_similarity_scores:
+            file.write(", ".join(map(str, iteration_scores)) + "\n")
+
+    print("All similarity scores saved to all_similarity_scores.txt.")
     conn.close()
 
 
