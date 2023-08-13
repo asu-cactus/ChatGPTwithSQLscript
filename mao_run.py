@@ -11,7 +11,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 import csv
 import re
 
-openai.api_key = 'xxx'
+openai.api_key = '' #You should configure the openai API key here
 
 def read_csv_file(file_path):
     with open(file_path, 'r') as file:
@@ -25,7 +25,7 @@ def create_connection():
         conn = psycopg2.connect(
             dbname="postgres",
             user="postgres",
-            password="021111",
+            password="postgres",
             host="localhost",  # e.g., "localhost"
             port="5432"   # e.g., "5432"
         )
@@ -33,6 +33,7 @@ def create_connection():
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
     return None
+
 def extract_last_insert_table_name(query):
     """
     Extracts the table name from the last INSERT INTO clause in the given SQL query.
@@ -67,16 +68,37 @@ def execute_sql(conn, query):
         conn.rollback()  # Rollback the transaction on error
         return f"Error: {e.pgerror}"
 
+
+def create_table(conn, create_statement):
+    print(create_statement)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("BEGIN;")
+        cursor.execute(create_statement)
+        # Assuming you want to commit after every SQL execution for simplicity
+        conn.commit()
+    except psycopg2.Error as e:
+        conn.rollback()  # Rollback the transaction on error
+        return f"Error: {e.pgerror}"
+
+
+
 # interact with chatGPT model
 def chat_with_gpt(prompt):
     try:
-        response = openai.Completion.create(
-            model="text-davinci-003",
-            prompt=prompt,
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role":"user", "content":prompt}],
             temperature=0,
-            max_tokens=2000,
+            max_tokens=2571,
         )
-        return response.choices[0].text.strip()
+        complete_response_message = response.choices[0]['message']['content']
+        sub1 = "```sql"
+        sub2 = "```"
+        sql_script = ''.join(complete_response_message.split(sub1)[1].split(sub2)[0])
+        print("SQL Script Extracted from GPT Response:")
+        print(sql_script)
+        return sql_script
     except Exception as e:
         return str(e)
 
@@ -176,29 +198,55 @@ def generate_prompt(json_file_path, template_option,source_data_name_to_find):
     schema_change_hints = data["Schema Change Hints"]
     notes = data["Remark or Note"]
     ground_truth = data["Ground Truth SQL"]
+
+
     # Generate the prompt based on the template option
     if template_option == 1:
-        prompt = f"""You are a SQL developer. I want you to finish a task, please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you have to create the first table with the given attribute names, named SourceSchema {source_data_schema}
-        Insert 5 rows into the source table.
-        Second, you have to make a second table for the given attributes, named TargetSchema: {target_data_schema}
-        Insert all rows from the first table into the second table."""
-        print(prompt)
-    elif template_option == 2:
-        prompt = f"""You are a SQL developer. I want you to finish a task, please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you have to create the first table with the given attribute names, named SourceSchema {source_data_schema}. {source_data_description}
-        Insert 5 rows into the source table.
-        Second, you have to make a second table for the given attributes, named TargetSchema: {target_data_schema}. {target_data_description}
-        Schema Change Hints: {schema_change_hints}
-        Insert all rows from the first table into the second table."""
-    elif template_option == 3:
-        prompt = f"""You are a SQL developer. I want you to finish a task, using the || operator for string concatenation, please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you have to create the first table with the given attribute names, named {source_data_name} {source_data_schema}. {source_data_description}
-        examples of source data: {samples}
-        Insert 1 rows into the source table.
-        Second, you have to make a second table for the given attributes, named TargetSchema: {target_data_schema}. {target_data_description}
-        Schema Change Hints: {schema_change_hints}
-        Notes: {notes}
-        Insert all rows from the first table into the second table."""
+        prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}, and insert 5 rows into the first table:
+        {samples}
 
-    return prompt,ground_truth
+        Second, you must create a second table named {target_data_name} with only the given attributes: {target_data_schema}
+
+        Finally, insert all rows from the first table into the second table.
+
+        Please delete the table before creating a table if the table exists.
+
+        {target_data_description}"""
+
+        print(prompt)
+        print("Ground Truth SQL Query:")
+        print(ground_truth)
+
+    elif template_option == 2:
+        prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}, and insert 5 rows into the first table:
+        {samples}
+
+        Second, you must create a second table named {target_data_name} with only the given attributes: {target_data_schema}
+
+        Finally, insert all rows from the first table into the second table.
+
+        Please delete the table before creating a table if the table exists.
+
+        {target_data_description}
+
+        {schema_change_hints}""" 
+    elif template_option == 3:
+        prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}, and insert 5 rows into the first table:
+        {samples}
+
+        Second, you must create a second table named {target_data_name} with only the given attributes: {target_data_schema}
+
+        Finally, insert all rows from the first table into the second table.
+
+        Please delete the table before creating a table if the table exists.
+
+        {target_data_description}
+
+        {schema_change_hints}
+
+        {source_data_description}"""
+
+    return prompt,ground_truth,target_data_name
 
 #5 Samples of Source Data: {sammples}
 # main script
@@ -206,21 +254,24 @@ def main(template_option):
     conn = create_connection()
 
 
-    json_file_path = 'D:/SQL/ChatGPT Benchmark Datasets.json'
+    json_file_path = 'chatgpt.json'
     # Source Data Name to find
-    source_data_name_to_find = 'Orange and Rockland'
+    source_data_name_to_find = 'Source1_1'
     # Generate the prompt for the chatGPT model
     if template_option == 1 or template_option == 2 or template_option == 3:
-       prompt, ground_truth_query = generate_prompt(json_file_path, template_option, source_data_name_to_find)
+       prompt, ground_truth_query, target_data_name = generate_prompt(json_file_path, template_option, source_data_name_to_find)
     else:
         print("Invalid template option.")
         return
+
     # Create a list to store similarity scores of each iteration
     all_similarity_scores = []
+
+    # Iterative Prompt Optimization and Validation
     iteration_count = 0
-    truth_result = execute_sql(conn, ground_truth_query)
-    print("TRUTH Result:")
-    print(truth_result)
+    validation_table_created = False
+    ground_truth_sql_result = None
+
     while True:
         iteration_count += 1
         if iteration_count > 5:
@@ -230,20 +281,27 @@ def main(template_option):
         gpt_output = chat_with_gpt(prompt)
         print(gpt_output)
 
-
         if "Error:" in gpt_output:
             prompt += " GPT Error: " + gpt_output
             break
 
-        # Execute the SQL query on the specified table
+        # Execute the SQL script on the specified table
         sql_result = execute_sql(conn, gpt_output)
         print("SQL Result:")
         print(sql_result)
         if "Error:" in sql_result:
-            prompt += " SQL Error: " + sql_result + " Please try again and show me the SQL query only."
+            prompt += sql_result
+            print(prompt)
             continue
 
-        is_correct, similarity_scores = validation(sql_result, truth_result)
+        # SQL script returned by ChatGPT is executed correctly
+        if (validation_table_created == False):
+            ground_truth_sql_result = execute_sql(conn, ground_truth_query)
+            print("Ground Truth SQL Query Result:")
+            print(ground_truth_sql_result)
+            validation_table_created = True
+
+        is_correct, similarity_scores = validation(sql_result, ground_truth_sql_result)
         all_similarity_scores.append(similarity_scores)
         print(is_correct)
 
@@ -251,7 +309,7 @@ def main(template_option):
             print("Successful SQL execution with correct result.")
             break
         else:
-            prompt = "The SQL query can run,  but the result is like the following, which is wrong: " + str(sql_result) + " Please try again and show me the SQL query only."
+            prompt = "The returned SQL script can run,  but the result is like the following, which is wrong: " + str(sql_result) + " Please try again."
             continue
 
     with open('all_similarity_scores.txt', 'w') as file:

@@ -22,7 +22,7 @@ def convert_excel_to_json(excel_file_path, json_file_path):
         "Contexts",
         "Schema Change Hints",
         "5 Samples of Source Data",
-        "GroundTruth SQL",
+        "Ground Truth SQL",
         "Complexity",
         "Remark or Note"
     ]
@@ -49,10 +49,10 @@ def convert_excel_to_json(excel_file_path, json_file_path):
     print(f"JSON file has been saved to {json_file_path}")
 
 # Path to the Excel file
-excel_file_path = 'D:/SQL/ChatGPT Benchmark Datasets.xlsx'
+excel_file_path = 'chatgpt.xlsx'
 
 # Path to save the JSON file
-json_file_path = 'D:/SQL/ChatGPT Benchmark Datasets.json'
+json_file_path = 'chatgpt.json'
 
 # Call the function to perform the conversion
 convert_excel_to_json(excel_file_path, json_file_path)
