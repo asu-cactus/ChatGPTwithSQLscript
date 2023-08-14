@@ -11,7 +11,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 import csv
 import re
 
-openai.api_key = '' #You should configure the openai API key here
+openai.api_key = 'TO BE FILLED IN'
 
 def read_csv_file(file_path):
     with open(file_path, 'r') as file:
@@ -87,17 +87,23 @@ def create_table(conn, create_statement):
 def chat_with_gpt(prompt):
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-3.5-turbo-16k",
             messages=[{"role":"user", "content":prompt}],
             temperature=0,
-            max_tokens=2571,
+            max_tokens=10000,
         )
         complete_response_message = response.choices[0]['message']['content']
+
+        print("Complete Response:")
+        print(complete_response_message)
+
         sub1 = "```sql"
         sub2 = "```"
         sql_script = ''.join(complete_response_message.split(sub1)[1].split(sub2)[0])
+        
         print("SQL Script Extracted from GPT Response:")
         print(sql_script)
+        
         return sql_script
     except Exception as e:
         return str(e)
@@ -137,13 +143,14 @@ def calculate_similarity(column_a, column_b, similarity_type="jaccard"):
     return True
 """
 def validation(sql_result, ground_truth):
+    validation_error=""
     if len(sql_result) != len(ground_truth) or len(sql_result[0]) != len(ground_truth[0]):
-        print("Different number of rows or columns in the results and ground truth.")
-        return False, []
+        validation_error = "Different number of rows or columns in the results and ground truth."
+        return False, [], validation_error
 
     # Initialize a list to store similarity scores
     similarity_scores = []
-
+    res = True
     # Iterate through columns and compare
     for col_index in range(len(sql_result[0])):
         sql_column = [str(row[col_index]) for row in sql_result]
@@ -152,13 +159,17 @@ def validation(sql_result, ground_truth):
         # You can change this to "cosine" to calculate cosine similarity
         similarity_score = calculate_similarity(sql_column, truth_column, similarity_type="jaccard")
 
+        if (similarity_score < 1):
+            validation_error = "the "+str(col_index)+"-th column does not match"
+            res = False
+
         # Append the similarity score for this column
         similarity_scores.append(similarity_score)
 
     print("Similarity scores for this iteration:", similarity_scores)
 
     # Returning both the result of strict validation and the similarity scores
-    return strict_validation(sql_result, ground_truth), similarity_scores
+    return res, similarity_scores, validation_error
 
 
 def strict_validation(sql_result, ground_truth):
@@ -202,14 +213,19 @@ def generate_prompt(json_file_path, template_option,source_data_name_to_find):
 
     # Generate the prompt based on the template option
     if template_option == 1:
-        prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}, and insert 5 rows into the first table:
+        prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}. Please delete the table before creating it if the first table exists. 
+
+        Second, insert 5 rows into the first table:
+
         {samples}
 
-        Second, you must create a second table named {target_data_name} with only the given attributes: {target_data_schema}
+        Third, you must create a second table named {target_data_name} with only the given attributes: {target_data_schema}. Please delete the table before creating it if the first table exists.
 
-        Finally, insert all rows from the first table into the second table.
+        Finally, insert all rows from the first table into the second table, note that the selection clause in the insert statement should ignore attributes that are not needed.
 
-        Please delete the table before creating a table if the table exists.
+        Please don't remove the first table, because we need it for validation.
+
+        Please quote the returned SQL script between "```sql\n" and "\n```". 
 
         {target_data_description}"""
 
@@ -218,33 +234,47 @@ def generate_prompt(json_file_path, template_option,source_data_name_to_find):
         print(ground_truth)
 
     elif template_option == 2:
-        prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}, and insert 5 rows into the first table:
+        prompt =  f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}. Please delete the table before creating it if the first table exists. 
+
+        Second, insert 5 rows into the first table:
+
         {samples}
 
-        Second, you must create a second table named {target_data_name} with only the given attributes: {target_data_schema}
+        Third, you must create a second table named {target_data_name} with only the given attributes: {target_data_schema}. Please delete the table before creating it if the first table exists.
 
-        Finally, insert all rows from the first table into the second table.
+        Finally, insert all rows from the first table into the second table, note that the selection clause in the insert statement should ignore attributes that are not needed.
 
-        Please delete the table before creating a table if the table exists.
+        Please don't remove the first table, because we need it for validation.
 
-        {target_data_description}
+        Please quote the returned SQL script between "```sql\n" and "\n```".
 
-        {schema_change_hints}""" 
+        Some explanation for the first table: {source_data_description}
+
+        Some explanation for the second table: {target_data_description}
+
+        """
     elif template_option == 3:
-        prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}, and insert 5 rows into the first table:
+        prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}. Please delete the table before creating it if the first table exists. 
+
+        Second, insert 5 rows into the first table:
+
         {samples}
 
-        Second, you must create a second table named {target_data_name} with only the given attributes: {target_data_schema}
+        Third, you must create a second table named {target_data_name} with only the given attributes: {target_data_schema}. Please delete the table before creating it if the first table exists.
 
-        Finally, insert all rows from the first table into the second table.
+        Finally, insert all rows from the first table into the second table, note that the selection clause in the insert statement should ignore attributes that are not needed.
 
-        Please delete the table before creating a table if the table exists.
+        Please don't remove the first table, because we need it for validation.
 
-        {target_data_description}
+        Please quote the returned SQL script between "```sql\n" and "\n```".
 
-        {schema_change_hints}
+        Some explanation for the first table: {source_data_description}
 
-        {source_data_description}"""
+        Some explanation for the second table: {target_data_description}
+
+        Some hints for the schema changes from the first table to the second table: {schema_change_hints}
+
+        """
 
     return prompt,ground_truth,target_data_name
 
@@ -255,66 +285,92 @@ def main(template_option):
 
 
     json_file_path = 'chatgpt.json'
-    # Source Data Name to find
-    source_data_name_to_find = 'Source1_1'
-    # Generate the prompt for the chatGPT model
-    if template_option == 1 or template_option == 2 or template_option == 3:
-       prompt, ground_truth_query, target_data_name = generate_prompt(json_file_path, template_option, source_data_name_to_find)
-    else:
-        print("Invalid template option.")
-        return
+    target_id = 1
+    source_id = 7 
+    while (target_id <= 1):
+        while (source_id <= 8):
+            # Source Data Name to find
+            source_data_name_to_find = "Source"+str(target_id)+"_"+str(source_id)
+            source_id = source_id + 1
+            print(source_data_name_to_find)
+            # Generate the prompt for the chatGPT model
+            if template_option == 1 or template_option == 2 or template_option == 3:
+                prompt, ground_truth_query, target_data_name = generate_prompt(json_file_path, template_option, source_data_name_to_find)
+            else:
+                print("Invalid template option.")
+                return
 
-    # Create a list to store similarity scores of each iteration
-    all_similarity_scores = []
+            # Create a list to store similarity scores of each iteration
+            all_similarity_scores = []
 
-    # Iterative Prompt Optimization and Validation
-    iteration_count = 0
-    validation_table_created = False
-    ground_truth_sql_result = None
+            # Iterative Prompt Optimization and Validation
+            iteration_count = 0
+            validation_table_created = False
+            ground_truth_sql_result = None
 
-    while True:
-        iteration_count += 1
-        if iteration_count > 5:
-            print("Maximum iterations reached without correct result.")
-            break
+            while True:
+                iteration_count += 1
+                if iteration_count > 5:
+                    print("Maximum iterations reached without correct result.")
+                    with open('all_similarity_scores.txt', 'a+') as file:
+                        file.write(target_data_name)
+                        file.write("<- ")
+                        file.write(source_data_name_to_find)
+                        file.write(" with iter-")
+                        file.write(str(iteration_count))
+                        file.write(": ")
+                        for iteration_scores in all_similarity_scores:
+                            file.write(", ".join(map(str, iteration_scores)) + "\n")
+                    break
 
-        gpt_output = chat_with_gpt(prompt)
-        print(gpt_output)
+                gpt_output = chat_with_gpt(prompt)
+                print(gpt_output)
 
-        if "Error:" in gpt_output:
-            prompt += " GPT Error: " + gpt_output
-            break
+                if "Error:" in gpt_output:
+                    prompt += " GPT Error: " + gpt_output
+                    continue
 
-        # Execute the SQL script on the specified table
-        sql_result = execute_sql(conn, gpt_output)
-        print("SQL Result:")
-        print(sql_result)
-        if "Error:" in sql_result:
-            prompt += sql_result
-            print(prompt)
-            continue
+                # Execute the SQL script on the specified table
+                sql_result = execute_sql(conn, gpt_output)
+                print("SQL Result:")
+                print(sql_result)
+                if "Error:" in sql_result:
+                    prompt += "\n Error in the previous response:";
+                    prompt += sql_result
+                    print(prompt)
+                    continue
 
-        # SQL script returned by ChatGPT is executed correctly
-        if (validation_table_created == False):
-            ground_truth_sql_result = execute_sql(conn, ground_truth_query)
-            print("Ground Truth SQL Query Result:")
-            print(ground_truth_sql_result)
-            validation_table_created = True
+                # SQL script returned by ChatGPT is executed correctly
+                if (validation_table_created == False):
+                    ground_truth_sql_result = execute_sql(conn, ground_truth_query)
+                    validation_table_created = True
+                
+                print("Ground Truth SQL Query Result:")
+                print(ground_truth_sql_result)
 
-        is_correct, similarity_scores = validation(sql_result, ground_truth_sql_result)
-        all_similarity_scores.append(similarity_scores)
-        print(is_correct)
+                # Validate the ChatGPT generated SQL script
+                is_correct, similarity_scores, validation_error = validation(sql_result, ground_truth_sql_result)
+                all_similarity_scores.append(similarity_scores)
+                print(is_correct)
 
-        if is_correct:
-            print("Successful SQL execution with correct result.")
-            break
-        else:
-            prompt = "The returned SQL script can run,  but the result is like the following, which is wrong: " + str(sql_result) + " Please try again."
-            continue
+                if is_correct:
+                    print("Successful SQL execution with correct result.")
+                    with open('all_similarity_scores.txt', 'a+') as file:
+                        file.write(target_data_name)
+                        file.write("<- ")
+                        file.write(source_data_name_to_find)
+                        file.write(" with iter-")
+                        file.write(str(iteration_count))
+                        file.write(": ")
+                        for iteration_scores in all_similarity_scores:
+                            file.write(", ".join(map(str, iteration_scores)) + "\n")
+                    break
+                else:
+                    prompt += "The returned SQL script can run,  but the execution result of the SQL is wrong: " + str(validation_error) + " Please try again."
+                    print(prompt)
+                    continue
+        target_id = target_id + 1
 
-    with open('all_similarity_scores.txt', 'w') as file:
-        for iteration_scores in all_similarity_scores:
-            file.write(", ".join(map(str, iteration_scores)) + "\n")
 
     print("All similarity scores saved to all_similarity_scores.txt.")
     conn.close()
