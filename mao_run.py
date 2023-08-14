@@ -11,7 +11,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 import csv
 import re
 
-openai.api_key = 'TO BE FILLED IN'
+openai.api_key = 'XXX'
 
 def read_csv_file(file_path):
     with open(file_path, 'r') as file:
@@ -286,9 +286,25 @@ def main(template_option):
 
     json_file_path = 'chatgpt.json'
     target_id = 1
-    source_id = 7 
-    while (target_id <= 1):
-        while (source_id <= 8):
+    source_id = 1
+    max_target_id = 1
+    max_source_id = 10
+    
+    # Log the starting of set of experiments
+    with open('all_similarity_scores.txt', 'a+') as file:
+        file.write("We will run experiments for the following groups:\n")
+        file.write("min_target_id=")
+        file.write(str(target_id))
+        file.write("; max_target_id=")
+        file.write(str(max_target_id))
+        file.write("; min_source_id=")
+        file.write(str(source_id))
+        file.write("; max_source_id=")
+        file.write(str(max_source_id))
+        file.write("\n")
+
+    while (target_id <= max_target_id):
+        while (source_id <= max_source_id):
             # Source Data Name to find
             source_data_name_to_find = "Source"+str(target_id)+"_"+str(source_id)
             source_id = source_id + 1
@@ -308,6 +324,7 @@ def main(template_option):
             validation_table_created = False
             ground_truth_sql_result = None
 
+            # Run the experiment
             while True:
                 iteration_count += 1
                 if iteration_count > 5:
@@ -344,8 +361,10 @@ def main(template_option):
                 if (validation_table_created == False):
                     ground_truth_sql_result = execute_sql(conn, ground_truth_query)
                     validation_table_created = True
-                
-                print("Ground Truth SQL Query Result:")
+
+                print("\nGround Truth SQL Query:\n")
+                print(ground_truth_query)
+                print("\nGround Truth SQL Query Result:\n")
                 print(ground_truth_sql_result)
 
                 # Validate the ChatGPT generated SQL script
