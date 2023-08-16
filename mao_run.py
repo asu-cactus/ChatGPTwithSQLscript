@@ -282,7 +282,7 @@ def main(template_option):
     json_file_path = 'chatgpt.json'
     target_id = 1
     max_target_id = 1
-    source_id = 7
+    source_id = 10
     max_source_id = 10
 
     # Log the starting of set of experiments
@@ -332,7 +332,7 @@ def main(template_option):
                         file.write(target_data_name)
                         file.write("<- ")
                         file.write(source_data_name_to_find)
-                        file.write("\t\t\t\t[Failed]\n\tPlease check the similarity scores:\n")
+                        file.write("\t\t\t\t\t[Failed]\n\tPlease check the similarity scores:\n")
                         for count, iteration_scores in enumerate(all_similarity_scores):
                             file.write("\t\t iter-")
                             file.write(str(count+1))
@@ -384,7 +384,7 @@ def main(template_option):
                         file.write(source_data_name_to_find)
                         file.write(" with iter-")
                         file.write(str(iteration_count))
-                        file.write("\t[Success]\n")
+                        file.write("\t\t[Success]\n")
                     all_similarity_scores = []
                     break
                 else:
