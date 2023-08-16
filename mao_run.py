@@ -10,8 +10,9 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 import csv
 import re
+from decimal import Decimal
 
-openai.api_key = 'XXX'
+openai.api_key = 'xxxx'
 
 def read_csv_file(file_path):
     with open(file_path, 'r') as file:
@@ -19,20 +20,22 @@ def read_csv_file(file_path):
         data = list(reader)
     return data
 
+
 def create_connection():
     """ create a database connection to the PostgreSQL database """
     try:
         conn = psycopg2.connect(
             dbname="postgres",
             user="postgres",
-            password="postgres",
+            password="021111",
             host="localhost",  # e.g., "localhost"
-            port="5432"   # e.g., "5432"
+            port="5432"  # e.g., "5432"
         )
         return conn
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
     return None
+
 
 def extract_last_insert_table_name(query):
     """
@@ -42,6 +45,7 @@ def extract_last_insert_table_name(query):
     if matches:
         return matches[-1]
     return None
+
 
 def execute_sql(conn, query):
     cursor = conn.cursor()
@@ -82,13 +86,12 @@ def create_table(conn, create_statement):
         return f"Error: {e.pgerror}"
 
 
-
 # interact with chatGPT model
 def chat_with_gpt(prompt):
     try:
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo-16k",
-            messages=[{"role":"user", "content":prompt}],
+            messages=[{"role": "user", "content": prompt}],
             temperature=0,
             max_tokens=10000,
         )
@@ -100,50 +103,45 @@ def chat_with_gpt(prompt):
         sub1 = "```sql"
         sub2 = "```"
         sql_script = ''.join(complete_response_message.split(sub1)[1].split(sub2)[0])
-        
+
         print("SQL Script Extracted from GPT Response:")
         print(sql_script)
-        
+
         return sql_script
     except Exception as e:
         return str(e)
 
-def calculate_similarity(column_a, column_b, similarity_type="jaccard"):
+
+def calculate_similarity(column_a, column_b, similarity_type="jaccard", threshold=1e-10):
     if similarity_type == "cosine":
         vectorizer = CountVectorizer().fit_transform(column_a + column_b)
         cosine_sim = cosine_similarity(vectorizer[:len(column_a)], vectorizer[len(column_a):])
         return cosine_sim[0, 0]
+    elif similarity_type == "numerical":
+        # Compare each pair of values in the columns and return the average similarity
+        scores = [numerical_similarity(val1, val2, threshold) for val1, val2 in zip(column_a, column_b)]
+        return sum(scores) / len(scores)
     else:  # Jaccard similarity
         intersection = len(set(column_a) & set(column_b))
         union = len(set(column_a) | set(column_b))
         return intersection / union if union != 0 else 0
 
-"""def verify(sql_result, ground_truth):
-    if len(sql_result) != len(ground_truth):
-        print("Different number of rows in the results and ground truth.")
-        return False
+def numerical_similarity(value1, value2, threshold=1e-10):
+    """
+    Calculate similarity for numerical values.
+    Returns 1.0 if the difference is below the threshold, 0.0 otherwise.
+    """
+    try:
+        diff = abs(float(value1) - float(value2))
+        if diff <= threshold:
+            return 1.0
+    except ValueError:
+        pass
+    return 0.0
 
-    for row_index, (sql_row, truth_row) in enumerate(zip(sql_result, ground_truth)):
-        sql_row_array = np.array(sql_row, dtype=object)
-        truth_row_array = np.array(truth_row, dtype=object)
 
-        for col_index in range(len(sql_row_array)):
-            try:
-                sql_val = float(sql_row_array[col_index])
-                truth_val = float(truth_row_array[col_index])
-
-                if not np.isclose(sql_val, truth_val):
-                    print(f"Row {row_index}, Column {col_index} does not match. SQL Result: {sql_val}, Ground Truth: {truth_val}")
-                    return False
-            except ValueError:
-                # This means that the conversion to float failed, so we skip this column
-                continue
-
-    print("Verification passed. The transformation is correct.")
-    return True
-"""
-def validation(sql_result, ground_truth):
-    validation_error=""
+def validation(sql_result, ground_truth, tolerance=1e-10):
+    validation_error = ""
     if len(sql_result) != len(ground_truth) or len(sql_result[0]) != len(ground_truth[0]):
         validation_error = "Different number of rows or columns in the results and ground truth."
         return False, [], validation_error
@@ -156,11 +154,18 @@ def validation(sql_result, ground_truth):
         sql_column = [str(row[col_index]) for row in sql_result]
         truth_column = [str(row[col_index]) for row in ground_truth]
 
-        # You can change this to "cosine" to calculate cosine similarity
-        similarity_score = calculate_similarity(sql_column, truth_column, similarity_type="jaccard")
+        # Determine whether columns can be treated as numerical
+        try:
+            float(sql_column[0])  # Try converting the first value
+            float(truth_column[0])
+            similarity_type = "numerical"
+        except ValueError:
+            similarity_type = "jaccard"
 
-        if (similarity_score < 1):
-            validation_error = "the "+str(col_index)+"-th column does not match"
+        similarity_score = calculate_similarity(sql_column, truth_column, similarity_type=similarity_type, threshold=tolerance)
+
+        if similarity_score < 1:
+            validation_error = f"the {col_index}-th column does not match"
             res = False
 
         # Append the similarity score for this column
@@ -171,21 +176,7 @@ def validation(sql_result, ground_truth):
     # Returning both the result of strict validation and the similarity scores
     return res, similarity_scores, validation_error
 
-
-def strict_validation(sql_result, ground_truth):
-    if len(sql_result) != len(ground_truth):
-        print("Different number of rows in the results and ground truth.")
-        return False
-
-    for row_index, (sql_row, truth_row) in enumerate(zip(sql_result, ground_truth)):
-        if sql_row != truth_row:
-            print(f"Row {row_index} does not match. SQL Result: {sql_row}, Ground Truth: {truth_row}")
-            return False
-
-    print("Verification passed. The transformation is correct.")
-    return True
-
-def generate_prompt(json_file_path, template_option,source_data_name_to_find):
+def generate_prompt(json_file_path, template_option, source_data_name_to_find):
     # Read the JSON file
     with open(json_file_path, 'r') as file:
         data_list = json.load(file)
@@ -198,6 +189,7 @@ def generate_prompt(json_file_path, template_option,source_data_name_to_find):
             break
     if data is None:
         return f"No data found for Source Data Name: {source_data_name_to_find}"
+
     # Extract the relevant information from the JSON data
     target_data_name = data["Target Data Name"]
     target_data_schema = data["Target Data Schema"]
@@ -209,7 +201,6 @@ def generate_prompt(json_file_path, template_option,source_data_name_to_find):
     schema_change_hints = data["Schema Change Hints"]
     notes = data["Remark or Note"]
     ground_truth = data["Ground Truth SQL"]
-
 
     # Generate the prompt based on the template option
     if template_option == 1:
@@ -234,7 +225,7 @@ def generate_prompt(json_file_path, template_option,source_data_name_to_find):
         print(ground_truth)
 
     elif template_option == 2:
-        prompt =  f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}. Please delete the table before creating it if the first table exists. 
+        prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}. Please delete the table before creating it if the first table exists. 
 
         Second, insert 5 rows into the first table:
 
@@ -276,20 +267,20 @@ def generate_prompt(json_file_path, template_option,source_data_name_to_find):
 
         """
 
-    return prompt,ground_truth,target_data_name
+    return prompt, ground_truth, target_data_name
 
-#5 Samples of Source Data: {sammples}
+
+# 5 Samples of Source Data: {sammples}
 # main script
 def main(template_option):
     conn = create_connection()
-
 
     json_file_path = 'chatgpt.json'
     target_id = 1
     source_id = 1
     max_target_id = 1
     max_source_id = 10
-    
+
     # Log the starting of set of experiments
     with open('all_similarity_scores.txt', 'a+') as file:
         file.write("We will run experiments for the following groups:\n")
@@ -306,12 +297,13 @@ def main(template_option):
     while (target_id <= max_target_id):
         while (source_id <= max_source_id):
             # Source Data Name to find
-            source_data_name_to_find = "Source"+str(target_id)+"_"+str(source_id)
+            source_data_name_to_find = "Source" + str(target_id) + "_" + str(source_id)
             source_id = source_id + 1
             print(source_data_name_to_find)
             # Generate the prompt for the chatGPT model
             if template_option == 1 or template_option == 2 or template_option == 3:
-                prompt, ground_truth_query, target_data_name = generate_prompt(json_file_path, template_option, source_data_name_to_find)
+                prompt, ground_truth_query, target_data_name = generate_prompt(json_file_path, template_option,
+                                                                               source_data_name_to_find)
             else:
                 print("Invalid template option.")
                 return
@@ -385,11 +377,11 @@ def main(template_option):
                             file.write(", ".join(map(str, iteration_scores)) + "\n")
                     break
                 else:
-                    prompt += "The returned SQL script can run,  but the execution result of the SQL is wrong: " + str(validation_error) + " Please try again."
+                    prompt += "The returned SQL script can run,  but the execution result of the SQL is wrong: " + str(
+                        validation_error) + " Please try again."
                     print(prompt)
                     continue
         target_id = target_id + 1
-
 
     print("All similarity scores saved to all_similarity_scores.txt.")
     conn.close()
