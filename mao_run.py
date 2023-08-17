@@ -10,9 +10,17 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 import csv
 import re
+from config import OPENAI_API_KEY
 from decimal import Decimal
 
+<<<<<<< HEAD
 openai.api_key = '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'
+=======
+# openai key -- from config import OPENAI_API_KEY
+# in config.py put OPENAI_API_KEY='your_key'
+openai.api_key = OPENAI_API_KEY
+
+>>>>>>> f9b17bc2ea226d834e2a88c4a12be8a7a62229e8
 
 def read_csv_file(file_path):
     with open(file_path, 'r') as file:
@@ -112,7 +120,7 @@ def chat_with_gpt(prompt):
         return str(e)
 
 
-def calculate_similarity(column_a, column_b, similarity_type="jaccard", threshold=1e-10):
+def calculate_similarity(column_a, column_b, similarity_type="numerical", threshold=1e-10):
     if similarity_type == "cosine":
         vectorizer = CountVectorizer().fit_transform(column_a + column_b)
         cosine_sim = cosine_similarity(vectorizer[:len(column_a)], vectorizer[len(column_a):])
@@ -136,7 +144,7 @@ def numerical_similarity(value1, value2, threshold=1e-10):
         if diff <= threshold:
             return 1.0
     except ValueError:
-        pass
+        return 0.0
     return 0.0
 
 
@@ -144,7 +152,7 @@ def validation(sql_result, ground_truth, tolerance=1e-10):
     validation_error = ""
     if len(sql_result) != len(ground_truth) or len(sql_result[0]) != len(ground_truth[0]):
         validation_error = "Different number of rows or columns in the results and ground truth."
-        return False, [], validation_error
+        return False, ["mismatch"], validation_error
 
     # Initialize a list to store similarity scores
     similarity_scores = []
@@ -283,20 +291,22 @@ def main(template_option):
     max_source_id = 3
 
     # Log the starting of set of experiments
-    with open('all_similarity_scores.txt', 'a+') as file:
-        file.write("We will run experiments for the following groups:\n")
-        file.write("min_target_id=")
-        file.write(str(target_id))
-        file.write("; max_target_id=")
-        file.write(str(max_target_id))
-        file.write("; min_source_id=")
-        file.write(str(source_id))
-        file.write("; max_source_id=")
-        file.write(str(max_source_id))
+    with open('all_similarity_scores.log', 'a+') as file:
+        file.write("Starting ... \n")
+        file.write("Scope: target ")
+        if target_id == max_target_id:
+            file.write("is " + str(target_id))
+        else:
+            file.write("in [" + str(target_id) + ", " + str(max_target_id) + "]")
+        file.write(", source ")
+        if source_id == max_source_id:
+            file.write("is " + str(source_id))
+        else:
+            file.write("in [" + str(source_id) + ", " + str(max_source_id) + "]")
         file.write("\n")
 
-    while (target_id <= max_target_id):
-        while (source_id <= max_source_id):
+    while target_id <= max_target_id:
+        while source_id <= max_source_id:
             # Source Data Name to find
             source_data_name_to_find = "Source" + str(target_id) + "_" + str(source_id)
             source_id = source_id + 1
@@ -320,22 +330,28 @@ def main(template_option):
             # Run the experiment
             while True:
                 iteration_count += 1
+                # check if reached to max number of iterations
                 if iteration_count > 5:
-                    print("Maximum iterations reached without correct result.")
-                    with open('all_similarity_scores.txt', 'a+') as file:
+                    print("[FAILED] Maximum iterations reached without correct result.")
+                    with open('all_similarity_scores.log', 'a+') as file:
                         file.write(target_data_name)
                         file.write("<- ")
                         file.write(source_data_name_to_find)
-                        file.write(" with iter-")
-                        file.write(str(iteration_count))
-                        file.write(": ")
-                        for iteration_scores in all_similarity_scores:
+                        file.write("\t\t\t\t\t[Failed]\n\tPlease check the similarity scores:\n")
+                        for count, iteration_scores in enumerate(all_similarity_scores):
+                            file.write("\t\t iter-")
+                            file.write(str(count+1))
+                            file.write(": ")
+                            if iteration_scores[0] == "mismatch":
+                                file.write("# of rows in result and ground truth ")
                             file.write(", ".join(map(str, iteration_scores)) + "\n")
+                    all_similarity_scores = []
                     break
 
+                # interact with gpt
                 gpt_output = chat_with_gpt(prompt)
+                print("-------------- GPT Results -----------------\n")
                 print(gpt_output)
-
                 if "Error:" in gpt_output:
                     prompt += " GPT Error: " + gpt_output
                     continue
@@ -345,7 +361,7 @@ def main(template_option):
                 print("SQL Result:")
                 print(sql_result)
                 if "Error:" in sql_result:
-                    prompt += "\n Error in the previous response:";
+                    prompt += "\n Error in the previous response:"
                     prompt += sql_result
                     print(prompt)
                     continue
@@ -355,9 +371,9 @@ def main(template_option):
                     ground_truth_sql_result = execute_sql(conn, ground_truth_query)
                     validation_table_created = True
 
-                print("\nGround Truth SQL Query:\n")
+                print("\nGround Truth SQL Query:")
                 print(ground_truth_query)
-                print("\nGround Truth SQL Query Result:\n")
+                print("\nGround Truth SQL Query Result:")
                 print(ground_truth_sql_result)
 
                 # Validate the ChatGPT generated SQL script
@@ -366,25 +382,26 @@ def main(template_option):
                 print(is_correct)
 
                 if is_correct:
-                    print("Successful SQL execution with correct result.")
-                    with open('all_similarity_scores.txt', 'a+') as file:
+                    print("[Success] Successful SQL execution with correct result.")
+                    with open('all_similarity_scores.log', 'a+') as file:
                         file.write(target_data_name)
                         file.write("<- ")
                         file.write(source_data_name_to_find)
                         file.write(" with iter-")
                         file.write(str(iteration_count))
-                        file.write(": ")
-                        for iteration_scores in all_similarity_scores:
-                            file.write(", ".join(map(str, iteration_scores)) + "\n")
+                        file.write("\t\t[Success]\n")
+                    all_similarity_scores = []
                     break
                 else:
-                    prompt += "The returned SQL script can run,  but the execution result of the SQL is wrong: " + str(
+                    # to be revised
+                    prompt += "The returned SQL script can run, but the execution result of the SQL is wrong: " + str(
                         validation_error) + " Please try again."
-                    print(prompt)
+
+                    print(prompt+"\n")
                     continue
         target_id = target_id + 1
 
-    print("All similarity scores saved to all_similarity_scores.txt.")
+    print("All similarity scores saved to all_similarity_scores.log.")
     conn.close()
 
 
