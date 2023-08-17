@@ -19,10 +19,12 @@ def convert_excel_to_json(excel_file_path, json_file_path):
         "Source Data Name",
         "Source Data Schema",
         "Source Data Description",
-        "Contexts",
         "Schema Change Hints",
         "5 Samples of Source Data",
         "Ground Truth SQL",
+        "Prompt-3 Results",
+        "Prompt-2 Results",
+        "Prompt-1 Results",
         "Complexity",
         "Remark or Note"
     ]
