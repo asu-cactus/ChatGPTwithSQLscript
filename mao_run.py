@@ -17,7 +17,6 @@ from decimal import Decimal
 # in config.py put OPENAI_API_KEY='your_key'
 openai.api_key = OPENAI_API_KEY
 
-
 def read_csv_file(file_path):
     with open(file_path, 'r') as file:
         reader = csv.reader(file)
@@ -101,15 +100,15 @@ def chat_with_gpt(prompt):
         )
         complete_response_message = response.choices[0]['message']['content']
 
-        print("Complete Response:")
-        print(complete_response_message)
+        #print("Complete Response:")
+        #print(complete_response_message)
 
         sub1 = "```sql"
         sub2 = "```"
         sql_script = ''.join(complete_response_message.split(sub1)[1].split(sub2)[0])
 
-        print("SQL Script Extracted from GPT Response:")
-        print(sql_script)
+        #print("SQL Script Extracted from GPT Response:")
+        #print(sql_script)
 
         return sql_script
     except Exception as e:
@@ -134,8 +133,13 @@ def numerical_similarity(value1, value2, threshold=1e-10):
     """
     Calculate similarity for numerical values.
     Returns 1.0 if the difference is below the threshold, 0.0 otherwise.
+    value2 is ground truth
     """
     try:
+        if value1 is None and value2 is None:
+            return 1.0
+        if value1 is None and value2 == 0:
+            return 1.0
         diff = abs(float(value1) - float(value2))
         if diff <= threshold:
             return 1.0
@@ -224,6 +228,9 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find):
 
         {target_data_description}"""
 
+        print(prompt)
+        print("Ground Truth SQL Query:")
+        print(ground_truth)
 
     elif template_option == 2:
         prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}. Please delete the table before creating it if the first table exists. 
@@ -267,6 +274,24 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find):
         Some hints for the schema changes from the first table to the second table: {schema_change_hints}
 
         """
+    elif template_option == 4:
+        prompt = f"""You are a skilled Postgres SQL developer. Let's perform some tasks:
+        1. Creating the {source_data_name} Table:
+        - Check if a table named {source_data_name} exists. If it does, delete it.
+        - Create a new table named {source_data_name}. This table should have has the following schema: {source_data_schema}. 
+        - Note:{source_data_description}
+        2. Populating the {source_data_name} Table:
+        - Insert the provided rows {samples} into the {source_data_name} table.
+        3. Creating the {target_data_name} Table:
+        - Check if a table named {target_data_name} exists. If it does, delete it.
+        - Create a new table named {target_data_name}. This table should have has the following schema:{target_data_schema}.
+        - Important: {target_data_description}
+        4. Transforming Data from {source_data_name} to {target_data_name}:
+        - Write a SQL transformation query to insert all data from the {source_data_name} table to the {target_data_name} table.
+        Transformation hints: {schema_change_hints}
+        Please don't remove the {source_data_name} table, because we need it for validation.
+        Please quote the returned SQL script to perform these tasks between "```sql\n" and "\n```".
+        """
 
     print(prompt)
     print("Ground Truth SQL Query:")
@@ -281,10 +306,10 @@ def main(template_option):
     conn = create_connection()
 
     json_file_path = 'chatgpt.json'
-    target_id = 11
+    target_id = 1
+    max_target_id = 1
     source_id = 1
-    max_target_id = 11
-    max_source_id = 3
+    max_source_id = 10
 
     # Log the starting of set of experiments
     with open('all_similarity_scores.log', 'a+') as file:
@@ -308,7 +333,7 @@ def main(template_option):
             source_id = source_id + 1
             print(source_data_name_to_find)
             # Generate the prompt for the chatGPT model
-            if template_option == 1 or template_option == 2 or template_option == 3:
+            if template_option in [1, 2, 3, 4]:
                 prompt, ground_truth_query, target_data_name = generate_prompt(json_file_path, template_option,
                                                                                source_data_name_to_find)
             else:
@@ -333,7 +358,7 @@ def main(template_option):
                         file.write(target_data_name)
                         file.write("<- ")
                         file.write(source_data_name_to_find)
-                        file.write("\t\t\t\t\t[Failed]\n\tPlease check the similarity scores:\n")
+                        file.write("\t\t\t\t[Failed]\n\tPlease check the similarity scores:\n")
                         for count, iteration_scores in enumerate(all_similarity_scores):
                             file.write("\t\t iter-")
                             file.write(str(count+1))
@@ -343,10 +368,10 @@ def main(template_option):
                             file.write(", ".join(map(str, iteration_scores)) + "\n")
                     all_similarity_scores = []
                     break
-
+                print("*** itr " + str(iteration_count) + "***")
                 # interact with gpt
                 gpt_output = chat_with_gpt(prompt)
-                print("-------------- GPT Results -----------------\n")
+                print("SQL Script Extracted from GPT Response:")
                 print(gpt_output)
                 if "Error:" in gpt_output:
                     prompt += " GPT Error: " + gpt_output
@@ -402,5 +427,5 @@ def main(template_option):
 
 
 if __name__ == "__main__":
-    template_option = int(input("Choose template option (1/2/3): "))
+    template_option = int(input("Choose template option (1/2/3/4): "))
     main(template_option)
