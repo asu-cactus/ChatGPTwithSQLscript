@@ -1,7 +1,7 @@
 [
     {
         "Target Data Name": "Target1",
-        "Target Data Schema": "CST 1:00 2:00 3:00 4:00 5:00 6:00 7:00 8:00 9:00 10:00 11:00 12:00 13:00 14:00 15:00 16:00 17:00 18:00 19:00 20:00 21:00 22:00 23:00 24:00",
+        "Target Data Schema": "CST TEXT, 1:00 NUMERIC, 2:00 NUMERIC, 3:00 NUMERIC, 4:00 NUMERIC, 5:00 NUMERIC, 6:00 NUMERIC, 7:00 NUMERIC, 8:00 NUMERIC, 9:00 NUMERIC, 10:00 NUMERIC, 11:00 NUMERIC, 12:00 NUMERIC, 13:00 NUMERIC, 14:00 NUMERIC, 15:00 NUMERIC, 16:00 NUMERIC, 17:00 NUMERIC, 18:00 NUMERIC, 19:00 NUMERIC, 20:00 NUMERIC, 21:00 NUMERIC, 22:00 NUMERIC, 23:00 NUMERIC, 24:00 NUMERIC",
         "Target Data Description": "Note that the second table records the total load in each hour each day. In addition, CST is a column that contains both the day of week in abbreviation format, such as Mon, Tue, Wed, Thu, Fri, Sat, and Sun, and the date in the form of mm/dd/yyyy. An example of CST value is 'Fri 01/01/2016'. All transformed CST values must conform to the format.",
         "Source Data Name": "Source1_1",
         "Source Data Schema": "DT_STRATA        DOW        PCT_HOURLY_0100        PCT_HOURLY_0200        PCT_HOURLY_0300        PCT_HOURLY_0400        PCT_HOURLY_0500        PCT_HOURLY_0600        PCT_HOURLY_0700        PCT_HOURLY_0800        PCT_HOURLY_0900        PCT_HOURLY_1000        PCT_HOURLY_1100        PCT_HOURLY_1200        PCT_HOURLY_1300        PCT_HOURLY_1400        PCT_HOURLY_1500        PCT_HOURLY_1600        PCT_HOURLY_1700        PCT_HOURLY_1800        PCT_HOURLY_1900        PCT_HOURLY_2000        PCT_HOURLY_2100        PCT_HOURLY_2200        PCT_HOURLY_2300        PCT_HOURLY_2400        PCT_HOURLY_2500 ",
@@ -17,7 +17,7 @@
     },
     {
         "Target Data Name": "Target1",
-        "Target Data Schema": "CST 1:00 2:00 3:00 4:00 5:00 6:00 7:00 8:00 9:00 10:00 11:00 12:00 13:00 14:00 15:00 16:00 17:00 18:00 19:00 20:00 21:00 22:00 23:00 24:00",
+        "Target Data Schema": "CST TEXT, 1:00 NUMERIC, 2:00 NUMERIC, 3:00 NUMERIC, 4:00 NUMERIC, 5:00 NUMERIC, 6:00 NUMERIC, 7:00 NUMERIC, 8:00 NUMERIC, 9:00 NUMERIC, 10:00 NUMERIC, 11:00 NUMERIC, 12:00 NUMERIC, 13:00 NUMERIC, 14:00 NUMERIC, 15:00 NUMERIC, 16:00 NUMERIC, 17:00 NUMERIC, 18:00 NUMERIC, 19:00 NUMERIC, 20:00 NUMERIC, 21:00 NUMERIC, 22:00 NUMERIC, 23:00 NUMERIC, 24:00 NUMERIC",
         "Target Data Description": "Note that the second table records the total load in each hour each day. In addition, CST is a column that contains both the day of week in abbreviation format, such as Mon, Tue, Wed, Thu, Fri, Sat, and Sun, and the date in the form of mm/dd/yyyy. An example of CST value is 'Fri 01/01/2016'. All transformed CST values must conform to the format.",
         "Source Data Name": "Source1_2",
         "Source Data Schema": "class Description analysis date value1 value2 value3 value4 value5 value6 value7 value8 value9 value10 value11 value12 value13 value14 value15 value16 value17 value18 value19 value20 value21 value22 value23 value24 uom",
@@ -33,7 +33,7 @@
     },
     {
         "Target Data Name": "Target1",
-        "Target Data Schema": "CST 1:00 2:00 3:00 4:00 5:00 6:00 7:00 8:00 9:00 10:00 11:00 12:00 13:00 14:00 15:00 16:00 17:00 18:00 19:00 20:00 21:00 22:00 23:00 24:00",
+        "Target Data Schema": "CST TEXT, 1:00 NUMERIC, 2:00 NUMERIC, 3:00 NUMERIC, 4:00 NUMERIC, 5:00 NUMERIC, 6:00 NUMERIC, 7:00 NUMERIC, 8:00 NUMERIC, 9:00 NUMERIC, 10:00 NUMERIC, 11:00 NUMERIC, 12:00 NUMERIC, 13:00 NUMERIC, 14:00 NUMERIC, 15:00 NUMERIC, 16:00 NUMERIC, 17:00 NUMERIC, 18:00 NUMERIC, 19:00 NUMERIC, 20:00 NUMERIC, 21:00 NUMERIC, 22:00 NUMERIC, 23:00 NUMERIC, 24:00 NUMERIC",
         "Target Data Description": "Note that the second table records the total load in each hour each day. In addition, CST is a column that contains both the day of week in abbreviation format, such as Mon, Tue, Wed, Thu, Fri, Sat, and Sun, and the date in the form of mm/dd/yyyy. An example of CST value is 'Fri 01/01/2016'. All transformed CST values must conform to the format.",
         "Source Data Name": "Source1_3",
         "Source Data Schema": "Date 1:00 AM 2:00 AM 3:00 AM 4:00 AM 5:00 AM 6:00 AM 7:00 AM 8:00 AM 9:00 AM 10:00 AM 11:00 AM 12:00 AM 1:00 PM 2:00 PM 3:00 PM 4:00 PM 5:00 PM 6:00 PM 7:00 PM 8:00 PM 9:00 PM 10:00 PM 11:00 PM 12:00 PM DSL",
@@ -49,7 +49,7 @@
     },
     {
         "Target Data Name": "Target1",
-        "Target Data Schema": "CST 1:00 2:00 3:00 4:00 5:00 6:00 7:00 8:00 9:00 10:00 11:00 12:00 13:00 14:00 15:00 16:00 17:00 18:00 19:00 20:00 21:00 22:00 23:00 24:00",
+        "Target Data Schema": "CST TEXT, 1:00 NUMERIC, 2:00 NUMERIC, 3:00 NUMERIC, 4:00 NUMERIC, 5:00 NUMERIC, 6:00 NUMERIC, 7:00 NUMERIC, 8:00 NUMERIC, 9:00 NUMERIC, 10:00 NUMERIC, 11:00 NUMERIC, 12:00 NUMERIC, 13:00 NUMERIC, 14:00 NUMERIC, 15:00 NUMERIC, 16:00 NUMERIC, 17:00 NUMERIC, 18:00 NUMERIC, 19:00 NUMERIC, 20:00 NUMERIC, 21:00 NUMERIC, 22:00 NUMERIC, 23:00 NUMERIC, 24:00 NUMERIC",
         "Target Data Description": "Note that the second table records the total load in each hour each day. In addition, CST is a column that contains both the day of week in abbreviation format, such as Mon, Tue, Wed, Thu, Fri, Sat, and Sun, and the date in the form of mm/dd/yyyy. An example of CST value is 'Fri 01/01/2016'. All transformed CST values must conform to the format.",
         "Source Data Name": "Source1_4",
         "Source Data Schema": "Date Profile 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24",
@@ -65,7 +65,7 @@
     },
     {
         "Target Data Name": "Target1",
-        "Target Data Schema": "CST 1:00 2:00 3:00 4:00 5:00 6:00 7:00 8:00 9:00 10:00 11:00 12:00 13:00 14:00 15:00 16:00 17:00 18:00 19:00 20:00 21:00 22:00 23:00 24:00",
+        "Target Data Schema": "CST TEXT, 1:00 NUMERIC, 2:00 NUMERIC, 3:00 NUMERIC, 4:00 NUMERIC, 5:00 NUMERIC, 6:00 NUMERIC, 7:00 NUMERIC, 8:00 NUMERIC, 9:00 NUMERIC, 10:00 NUMERIC, 11:00 NUMERIC, 12:00 NUMERIC, 13:00 NUMERIC, 14:00 NUMERIC, 15:00 NUMERIC, 16:00 NUMERIC, 17:00 NUMERIC, 18:00 NUMERIC, 19:00 NUMERIC, 20:00 NUMERIC, 21:00 NUMERIC, 22:00 NUMERIC, 23:00 NUMERIC, 24:00 NUMERIC",
         "Target Data Description": "Note that the second table records the total load in each hour each day. In addition, CST is a column that contains both the day of week in abbreviation format, such as Mon, Tue, Wed, Thu, Fri, Sat, and Sun, and the date in the form of mm/dd/yyyy. An example of CST value is 'Fri 01/01/2016'. All transformed CST values must conform to the format.",
         "Source Data Name": "Source1_5",
         "Source Data Schema": "date Hour 1 Hour 2 Hour 3 Hour 4 Hour 5 Hour 6 Hour 7 Hour 8 Hour 9 Hour 10 Hour 11 Hour 12 Hour 13 Hour 14 Hour 15 Hour 16 Hour 17 Hour 18 Hour 19 Hour 20 Hour 21 Hour 22 Hour 23 Hour 24",
@@ -81,7 +81,7 @@
     },
     {
         "Target Data Name": "Target1",
-        "Target Data Schema": "CST 1:00 2:00 3:00 4:00 5:00 6:00 7:00 8:00 9:00 10:00 11:00 12:00 13:00 14:00 15:00 16:00 17:00 18:00 19:00 20:00 21:00 22:00 23:00 24:00",
+        "Target Data Schema": "CST TEXT, 1:00 NUMERIC, 2:00 NUMERIC, 3:00 NUMERIC, 4:00 NUMERIC, 5:00 NUMERIC, 6:00 NUMERIC, 7:00 NUMERIC, 8:00 NUMERIC, 9:00 NUMERIC, 10:00 NUMERIC, 11:00 NUMERIC, 12:00 NUMERIC, 13:00 NUMERIC, 14:00 NUMERIC, 15:00 NUMERIC, 16:00 NUMERIC, 17:00 NUMERIC, 18:00 NUMERIC, 19:00 NUMERIC, 20:00 NUMERIC, 21:00 NUMERIC, 22:00 NUMERIC, 23:00 NUMERIC, 24:00 NUMERIC",
         "Target Data Description": "Note that the second table records the total load in each hour each day. In addition, CST is a column that contains both the day of week in abbreviation format, such as Mon, Tue, Wed, Thu, Fri, Sat, and Sun, and the date in the form of mm/dd/yyyy. An example of CST value is 'Fri 01/01/2016'. All transformed CST values must conform to the format.",
         "Source Data Name": "Source1_6",
         "Source Data Schema": "Company Rate Rate Code Date Hr1 Hr2 Hr3 Hr4 Hr5 Hr6 Hr7 Hr8 Hr9 Hr10 Hr11 Hr12 Hr13 Hr14 Hr15 Hr16 Hr17 Hr18 Hr19 Hr20 Hr21 Hr22 Hr23 Hr24",
@@ -97,12 +97,12 @@
     },
     {
         "Target Data Name": "Target1",
-        "Target Data Schema": "CST 1:00 2:00 3:00 4:00 5:00 6:00 7:00 8:00 9:00 10:00 11:00 12:00 13:00 14:00 15:00 16:00 17:00 18:00 19:00 20:00 21:00 22:00 23:00 24:00",
+        "Target Data Schema": "CST TEXT, 1:00 NUMERIC, 2:00 NUMERIC, 3:00 NUMERIC, 4:00 NUMERIC, 5:00 NUMERIC, 6:00 NUMERIC, 7:00 NUMERIC, 8:00 NUMERIC, 9:00 NUMERIC, 10:00 NUMERIC, 11:00 NUMERIC, 12:00 NUMERIC, 13:00 NUMERIC, 14:00 NUMERIC, 15:00 NUMERIC, 16:00 NUMERIC, 17:00 NUMERIC, 18:00 NUMERIC, 19:00 NUMERIC, 20:00 NUMERIC, 21:00 NUMERIC, 22:00 NUMERIC, 23:00 NUMERIC, 24:00 NUMERIC",
         "Target Data Description": "Note that the second table records the total load in each hour each day. In addition, CST is a column that contains both the day of week in abbreviation format, such as Mon, Tue, Wed, Thu, Fri, Sat, and Sun, and the date in the form of mm/dd/yyyy. An example of CST value is 'Fri 01/01/2016'. All transformed CST values must conform to the format.",
         "Source Data Name": "Source1_7",
         "Source Data Schema": "Segment Date 1:00 2:00 3:00 4:00 5:00 6:00 7:00 8:00 9:00 10:00 11:00 12:00 13:00 14:00 15:00 16:00 17:00 18:00 19:00 20:00 21:00 22:00 23:00 24:00:00",
         "Source Data Description": "Segment describes the segment of the building. Date contains both  the day of week in abbreviation format and the date in the form of mm/dd/yyyy.  ",
-        "Schema Change Hints": "The Date attribute in the first table is directly mapped to CST in the second table.",
+        "Schema Change Hints": "CST in target table maps to Date in source table.",
         "5 Samples of Source Data": "RS6        Wed 01/01/2003        2.188        2.114        2.013        1.944        2.064        2.119        2.019        2.407        2.59        2.793        3.098        3.33        3.556        3.49        3.311        3.322        3.262        3.407        3.302        3.64        3.537        3.299        3.177        2.753\nRS6        Thu 01/02/2003        2.619        2.352        2.157        2.38        2.444        2.695        2.835        2.844        2.983        2.9        2.79        2.802        2.872        2.543        2.654        2.684        3.032        3.267        3.492        3.408        3.318        3.329        2.999        2.776\nRS6        Fri 01/03/2003        2.463        2.495        2.53        2.511        2.596        2.868        3.032        3.182        3.248        3.303        3.134        3.028        2.981        2.943        2.896        3.016        3.113        3.436        3.553        3.44        3.398        3.216        3.018        2.866\nRS6        Sat 01/04/2003        2.736        2.587        2.622        2.627        2.569        2.753        2.718        2.884        3.353        3.225        3.15        2.746        2.869        2.819        2.489        2.747        3.055        3.157        3.291        3.192        3.215        2.937        2.624        2.579\nRS6        Sun 01/05/2003        2.464        2.317        2.298        2.209        2.365        2.435        2.607        2.786        3.029        3.173        3.049        3.188        3.11        2.895        3.033        2.841        3.069        3.431        3.554        3.364        3.398        3.334        2.813        2.585",
         "Ground Truth SQL": "DROP TABLE IF EXISTS Target1_7_Valid;  CREATE TABLE Target1_7_Valid (\n    CST TEXT,\n    \"1:00\" NUMERIC,\n    \"2:00\" NUMERIC,\n    \"3:00\" NUMERIC,\n    \"4:00\" NUMERIC,\n    \"5:00\" NUMERIC,\n    \"6:00\" NUMERIC,\n    \"7:00\" NUMERIC,\n    \"8:00\" NUMERIC,\n    \"9:00\" NUMERIC,\n    \"10:00\" NUMERIC,\n    \"11:00\" NUMERIC,\n    \"12:00\" NUMERIC,\n    \"13:00\" NUMERIC,\n    \"14:00\" NUMERIC,\n    \"15:00\" NUMERIC,\n    \"16:00\" NUMERIC,\n    \"17:00\" NUMERIC,\n    \"18:00\" NUMERIC,\n    \"19:00\" NUMERIC,\n    \"20:00\" NUMERIC,\n    \"21:00\" NUMERIC,\n    \"22:00\" NUMERIC,\n    \"23:00\" NUMERIC,\n    \"24:00\" NUMERIC\n);       INSERT INTO Target1_7_Valid (CST, \"1:00\", \"2:00\", \"3:00\", \"4:00\", \"5:00\",\"6:00\", \"7:00\", \"8:00\", \"9:00\", \"10:00\",\"11:00\", \"12:00\", \"13:00\", \"14:00\", \"15:00\",\"16:00\", \"17:00\", \"18:00\", \"19:00\", \"20:00\",\"21:00\", \"22:00\", \"23:00\", \"24:00\") SELECT  Date, \"1:00\", \"2:00\", \"3:00\", \"4:00\", \"5:00\",\"6:00\", \"7:00\", \"8:00\", \"9:00\", \"10:00\",\"11:00\", \"12:00\", \"13:00\", \"14:00\", \"15:00\",\"16:00\", \"17:00\", \"18:00\", \"19:00\", \"20:00\",\"21:00\", \"22:00\", \"23:00\", \"24:00\" FROM Source1_7;",
         "Prompt-3 Results": 0,
@@ -113,7 +113,7 @@
     },
     {
         "Target Data Name": "Target1",
-        "Target Data Schema": "CST 1:00 2:00 3:00 4:00 5:00 6:00 7:00 8:00 9:00 10:00 11:00 12:00 13:00 14:00 15:00 16:00 17:00 18:00 19:00 20:00 21:00 22:00 23:00 24:00",
+        "Target Data Schema": "CST TEXT, 1:00 NUMERIC, 2:00 NUMERIC, 3:00 NUMERIC, 4:00 NUMERIC, 5:00 NUMERIC, 6:00 NUMERIC, 7:00 NUMERIC, 8:00 NUMERIC, 9:00 NUMERIC, 10:00 NUMERIC, 11:00 NUMERIC, 12:00 NUMERIC, 13:00 NUMERIC, 14:00 NUMERIC, 15:00 NUMERIC, 16:00 NUMERIC, 17:00 NUMERIC, 18:00 NUMERIC, 19:00 NUMERIC, 20:00 NUMERIC, 21:00 NUMERIC, 22:00 NUMERIC, 23:00 NUMERIC, 24:00 NUMERIC",
         "Target Data Description": "Note that the second table records the total load in each hour each day. In addition, CST is a column that contains both the day of week in abbreviation format, such as Mon, Tue, Wed, Thu, Fri, Sat, and Sun, and the date in the form of mm/dd/yyyy. An example of CST value is 'Fri 01/01/2016'. All transformed CST values must conform to the format.",
         "Source Data Name": "Source1_8",
         "Source Data Schema": "datetime cerc_logger_1",
@@ -129,7 +129,7 @@
     },
     {
         "Target Data Name": "Target1",
-        "Target Data Schema": "CST 1:00 2:00 3:00 4:00 5:00 6:00 7:00 8:00 9:00 10:00 11:00 12:00 13:00 14:00 15:00 16:00 17:00 18:00 19:00 20:00 21:00 22:00 23:00 24:00",
+        "Target Data Schema": "CST TEXT, 1:00 NUMERIC, 2:00 NUMERIC, 3:00 NUMERIC, 4:00 NUMERIC, 5:00 NUMERIC, 6:00 NUMERIC, 7:00 NUMERIC, 8:00 NUMERIC, 9:00 NUMERIC, 10:00 NUMERIC, 11:00 NUMERIC, 12:00 NUMERIC, 13:00 NUMERIC, 14:00 NUMERIC, 15:00 NUMERIC, 16:00 NUMERIC, 17:00 NUMERIC, 18:00 NUMERIC, 19:00 NUMERIC, 20:00 NUMERIC, 21:00 NUMERIC, 22:00 NUMERIC, 23:00 NUMERIC, 24:00 NUMERIC",
         "Target Data Description": "Note that the second table records the total load in each hour each day. In addition, CST is a column that contains both the day of week in abbreviation format, such as Mon, Tue, Wed, Thu, Fri, Sat, and Sun, and the date in the form of mm/dd/yyyy. An example of CST value is 'Fri 01/01/2016'. All transformed CST values must conform to the format.",
         "Source Data Name": "Source1_9",
         "Source Data Schema": "datetime zone_16",
@@ -145,10 +145,10 @@
     },
     {
         "Target Data Name": "Target1",
-        "Target Data Schema": "CST 1:00 2:00 3:00 4:00 5:00 6:00 7:00 8:00 9:00 10:00 11:00 12:00 13:00 14:00 15:00 16:00 17:00 18:00 19:00 20:00 21:00 22:00 23:00 24:00",
-        "Target Data Description": "Note that the second table records the total load in each hour each day. In addition, CST is a column that contains both the day of week in abbreviation format, such as Mon, Tue, Wed, Thu, Fri, Sat, and Sun, and the date in the form of mm/dd/yyyy. An example of CST value is 'Fri 01/01/2016'. All transformed CST values must conform to the format.",
+        "Target Data Schema": "CST TEXT, 1:00 NUMERIC, 2:00 NUMERIC, 3:00 NUMERIC, 4:00 NUMERIC, 5:00 NUMERIC, 6:00 NUMERIC, 7:00 NUMERIC, 8:00 NUMERIC, 9:00 NUMERIC, 10:00 NUMERIC, 11:00 NUMERIC, 12:00 NUMERIC, 13:00 NUMERIC, 14:00 NUMERIC, 15:00 NUMERIC, 16:00 NUMERIC, 17:00 NUMERIC, 18:00 NUMERIC, 19:00 NUMERIC, 20:00 NUMERIC, 21:00 NUMERIC, 22:00 NUMERIC, 23:00 NUMERIC, 24:00 NUMERIC",
+        "Target Data Description": "The target table records the total load of each hour of the 24 hours of a given CST date. In addition, CST is a column that contains both the day of week in abbreviation format, such as Mon, Tue, Wed, Thu, Fri, Sat, and Sun, and the date in the form of mm/dd/yyyy. An example of CST value is 'Fri 01/01/2016'. All transformed CST values must conform to the format.",
         "Source Data Name": "Source1_10",
-        "Source Data Schema": "datetime zone_16_cooling_sp",
+        "Source Data Schema": "datetime TIMESTAMP, zone_16_cooling_sp Numeric",
         "Source Data Description": "The datetime attribute contains one timestamp for every 5 minutes. The zone_016_cooling_sp value is the total load value during the corresponding 5 minutes. ",
         "Schema Change Hints": "Use aggregation",
         "5 Samples of Source Data": "9/15/2018 09:55        72\n9/15/2018 10:00        75\n9/15/2018 10:05        73\n9/15/2018 10:10        72\n9/15/2018 10:15        73",
