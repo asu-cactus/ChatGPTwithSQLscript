@@ -12,7 +12,7 @@ import csv
 import re
 from decimal import Decimal
 
-openai.api_key = 'xxxx'
+openai.api_key = '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'
 
 def read_csv_file(file_path):
     with open(file_path, 'r') as file:
@@ -27,7 +27,7 @@ def create_connection():
         conn = psycopg2.connect(
             dbname="postgres",
             user="postgres",
-            password="021111",
+            password="postgres",
             host="localhost",  # e.g., "localhost"
             port="5432"  # e.g., "5432"
         )
@@ -206,7 +206,7 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find):
     if template_option == 1:
         prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}. Please delete the table before creating it if the first table exists. 
 
-        Second, insert 5 rows into the first table:
+        Second, insert the following row(s) into the first table:
 
         {samples}
 
@@ -220,14 +220,11 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find):
 
         {target_data_description}"""
 
-        print(prompt)
-        print("Ground Truth SQL Query:")
-        print(ground_truth)
 
     elif template_option == 2:
         prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}. Please delete the table before creating it if the first table exists. 
 
-        Second, insert 5 rows into the first table:
+        Second, insert the following row(s) into the first table and please don't remove any values:
 
         {samples}
 
@@ -247,7 +244,7 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find):
     elif template_option == 3:
         prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}. Please delete the table before creating it if the first table exists. 
 
-        Second, insert 5 rows into the first table:
+        Second, insert the following row(s) into the first table and please don't remove any values:
 
         {samples}
 
@@ -267,6 +264,10 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find):
 
         """
 
+    print(prompt)
+    print("Ground Truth SQL Query:")
+    print(ground_truth)
+
     return prompt, ground_truth, target_data_name
 
 
@@ -276,10 +277,10 @@ def main(template_option):
     conn = create_connection()
 
     json_file_path = 'chatgpt.json'
-    target_id = 1
+    target_id = 11
     source_id = 1
-    max_target_id = 1
-    max_source_id = 10
+    max_target_id = 11
+    max_source_id = 3
 
     # Log the starting of set of experiments
     with open('all_similarity_scores.txt', 'a+') as file:
