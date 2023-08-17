@@ -13,14 +13,10 @@ import re
 from config import OPENAI_API_KEY
 from decimal import Decimal
 
-<<<<<<< HEAD
-openai.api_key = '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'
-=======
 # openai key -- from config import OPENAI_API_KEY
 # in config.py put OPENAI_API_KEY='your_key'
 openai.api_key = OPENAI_API_KEY
 
->>>>>>> f9b17bc2ea226d834e2a88c4a12be8a7a62229e8
 
 def read_csv_file(file_path):
     with open(file_path, 'r') as file:
