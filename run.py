@@ -157,7 +157,7 @@ def validation(sql_result, ground_truth, tolerance=1e-10):
 
     # Initialize a list to store similarity scores
     similarity_scores = []
-    fully_matched_columns = 0  # Counter for columns that matched perfectly
+    fully_matched_columns_num = 0  # Counter for columns that matched perfectly
 
     res = True
     # Iterate through columns and compare
@@ -188,21 +188,19 @@ def validation(sql_result, ground_truth, tolerance=1e-10):
                                                 threshold=tolerance)
 
         if similarity_score == 1:
-            fully_matched_columns += 1
+            fully_matched_columns_num += 1
         elif similarity_score < 1:
             validation_error += f"the {col_index}-th column does not match; "
             res = False
 
         # Append the similarity score for this column
         similarity_scores.append(similarity_score)
-    if fully_matched_columns == len(sql_result[0]):
-        global_accuracy = fully_matched_columns / len(sql_result[0])
-    else:
-        global_accuracy = 0.0
+
+    case_accuracy = fully_matched_columns_num / len(sql_result[0])
     print("Similarity scores for this iteration:", similarity_scores)
 
     # Returning both the result of strict validation, the similarity scores, and the global accuracy
-    return global_accuracy, res, similarity_scores, validation_error
+    return case_accuracy, res, similarity_scores, validation_error
 
 def generate_prompt(json_file_path, template_option, source_data_name_to_find):
     # Read the JSON file
@@ -298,13 +296,15 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find):
         prompt = f"""You are a skilled Postgres SQL developer. Let's perform some tasks:
         1. Creating the {source_data_name} Table:
         - Check if a table named {source_data_name} exists. If it does, delete it.
-        - Create a new table named {source_data_name}. This table should have has the following schema: {source_data_schema}. 
+        - Create a new table named {source_data_name}. This table should have exact attributes from the following 
+        schema: {source_data_schema}.
         - Note:{source_data_description}
         2. Populating the {source_data_name} Table:
         - Insert the provided rows {samples} into the {source_data_name} table.
         3. Creating the {target_data_name} Table:
         - Check if a table named {target_data_name} exists. If it does, delete it.
-        - Create a new table named {target_data_name}. This table should have has the following schema:{target_data_schema}.
+        - Create a new table named {target_data_name}. This table should have exact attributes from the following 
+        schema:{target_data_schema}.
         - Important: {target_data_description}
         4. Transforming Data from {source_data_name} to {target_data_name}:
         - Write a SQL transformation query to insert all rows from the {source_data_name} table to the {target_data_name} table.
@@ -319,6 +319,18 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find):
 
     return prompt, ground_truth, target_data_name
 
+def print_experiment_settings(template_option, target_id, max_target_id, source_id, max_source_id):
+    print("Starting with template" + str(template_option)+" ...")
+    print("Scope: target ", end="")
+    if target_id == max_target_id:
+        print("is " + str(target_id))
+    else:
+        print("in [" + str(target_id) + ", " + str(max_target_id) + "]")
+    print(", source ", end="")
+    if source_id == max_source_id:
+        print("is " + str(source_id))
+    else:
+        print("in [" + str(source_id) + ", " + str(max_source_id) + "]")
 
 # 5 Samples of Source Data: {sammples}
 # main script
@@ -326,25 +338,13 @@ def main(template_option):
     conn = create_connection()
 
     json_file_path = 'chatgpt.json'
-    target_id = 1
-    max_target_id = 1
+    target_id = 3
+    max_target_id = 3
     source_id = 1
-    max_source_id = 10
+    max_source_id = 1
 
     # Log the starting of set of experiments
-    with open('all_similarity_scores.log', 'a+') as file:
-        file.write("Starting ... \n")
-        file.write("Scope: target ")
-        if target_id == max_target_id:
-            file.write("is " + str(target_id))
-        else:
-            file.write("in [" + str(target_id) + ", " + str(max_target_id) + "]")
-        file.write(", source ")
-        if source_id == max_source_id:
-            file.write("is " + str(source_id))
-        else:
-            file.write("in [" + str(source_id) + ", " + str(max_source_id) + "]")
-        file.write("\n")
+    print_experiment_settings(template_option, target_id, max_target_id, source_id, max_source_id)
 
     while target_id <= max_target_id:
         while source_id <= max_source_id:
@@ -367,7 +367,7 @@ def main(template_option):
             iteration_count = 0
             validation_table_created = False
             ground_truth_sql_result = None
-
+            accuracy_list = []
             # Run the experiment
             while True:
                 iteration_count += 1
@@ -383,10 +383,12 @@ def main(template_option):
                             file.write("\t\t iter-")
                             file.write(str(count+1))
                             file.write(": ")
-                            if iteration_scores[0] == "mismatch":
-                                file.write("# of rows in result and ground truth ")
-                            file.write(", ".join(map(str, iteration_scores)) + "\n")
-                            file.write(f", Global accuracy: {global_accuracy:.2f}\n")
+                            if iteration_scores[0] == "missmatch":
+                                file.write("miss-match: # of rows in result and ground truth")
+                            else:
+                                file.write(", ".join(map(str, iteration_scores)) + "\n")
+                        print(accuracy_list)
+                        file.write(f"\t\t\t\tCase accuracy: {max(accuracy_list):.2f}\n")
                     all_similarity_scores = []
                     break
                 print("*** itr " + str(iteration_count) + "***")
@@ -406,6 +408,7 @@ def main(template_option):
                     prompt += "\n Error in the previous response:"
                     prompt += sql_result
                     print(prompt)
+                    accuracy_list.append(0.0)
                     continue
 
                 # SQL script returned by ChatGPT is executed correctly
@@ -419,7 +422,8 @@ def main(template_option):
                 print(ground_truth_sql_result)
 
                 # Validate the ChatGPT generated SQL script
-                global_accuracy, is_correct, similarity_scores, validation_error = validation(sql_result, ground_truth_sql_result)
+                case_accuracy, is_correct, similarity_scores, validation_error = validation(sql_result, ground_truth_sql_result)
+                accuracy_list.append(case_accuracy)
                 all_similarity_scores.append(similarity_scores)
                 print(is_correct)
 
@@ -433,7 +437,7 @@ def main(template_option):
                         file.write(str(iteration_count))
                         file.write("\t\t[Success]\n")
                         # Append the global accuracy to the end
-                        #file.write(f", Global accuracy: {global_accuracy:.2f}\n")
+                        #file.write(f", Global accuracy: {case_accuracy:.2f}\n")
                     all_similarity_scores = []
                     break
                 else:
