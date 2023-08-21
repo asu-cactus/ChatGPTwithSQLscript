@@ -150,39 +150,59 @@ def numerical_similarity(value1, value2, threshold=1e-10):
 
 def validation(sql_result, ground_truth, tolerance=1e-10):
     validation_error = ""
+
     if len(sql_result) != len(ground_truth) or len(sql_result[0]) != len(ground_truth[0]):
         validation_error = "Different number of rows or columns in the results and ground truth."
-        return False, ["mismatch"], validation_error
+        return 0.0, False, ["missmatch"], validation_error
 
     # Initialize a list to store similarity scores
     similarity_scores = []
+    fully_matched_columns = 0  # Counter for columns that matched perfectly
+
     res = True
     # Iterate through columns and compare
     for col_index in range(len(sql_result[0])):
-        sql_column = [str(row[col_index]) for row in sql_result]
-        truth_column = [str(row[col_index]) for row in ground_truth]
+        sql_column = [str(row[col_index]) if row[col_index] is not None else '0.0' for row in sql_result]
+        truth_column = [str(row[col_index]) if row[col_index] is not None else '0.0' for row in ground_truth]
 
         # Determine whether columns can be treated as numerical
+        is_sql_numeric = True
+        is_truth_numeric = True
+
         try:
             float(sql_column[0])  # Try converting the first value
+        except (ValueError, TypeError):
+            is_sql_numeric = False
+
+        try:
             float(truth_column[0])
+        except (ValueError, TypeError):
+            is_truth_numeric = False
+
+        if is_sql_numeric and is_truth_numeric:
             similarity_type = "numerical"
-        except ValueError:
+        else:
             similarity_type = "jaccard"
 
-        similarity_score = calculate_similarity(sql_column, truth_column, similarity_type=similarity_type, threshold=tolerance)
+        similarity_score = calculate_similarity(sql_column, truth_column, similarity_type=similarity_type,
+                                                threshold=tolerance)
 
-        if similarity_score < 1:
-            validation_error = f"the {col_index}-th column does not match"
+        if similarity_score == 1:
+            fully_matched_columns += 1
+        elif similarity_score < 1:
+            validation_error += f"the {col_index}-th column does not match; "
             res = False
 
         # Append the similarity score for this column
         similarity_scores.append(similarity_score)
-
+    if fully_matched_columns == len(sql_result[0]):
+        global_accuracy = fully_matched_columns / len(sql_result[0])
+    else:
+        global_accuracy = 0.0
     print("Similarity scores for this iteration:", similarity_scores)
 
-    # Returning both the result of strict validation and the similarity scores
-    return res, similarity_scores, validation_error
+    # Returning both the result of strict validation, the similarity scores, and the global accuracy
+    return global_accuracy, res, similarity_scores, validation_error
 
 def generate_prompt(json_file_path, template_option, source_data_name_to_find):
     # Read the JSON file
@@ -287,8 +307,8 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find):
         - Create a new table named {target_data_name}. This table should have has the following schema:{target_data_schema}.
         - Important: {target_data_description}
         4. Transforming Data from {source_data_name} to {target_data_name}:
-        - Write a SQL transformation query to insert all data from the {source_data_name} table to the {target_data_name} table.
-        Transformation hints: {schema_change_hints}
+        - Write a SQL transformation query to insert all rows from the {source_data_name} table to the {target_data_name} table.
+        - Transformation hints: {schema_change_hints}
         Please don't remove the {source_data_name} table, because we need it for validation.
         Please quote the returned SQL script to perform these tasks between "```sql\n" and "\n```".
         """
@@ -366,6 +386,7 @@ def main(template_option):
                             if iteration_scores[0] == "mismatch":
                                 file.write("# of rows in result and ground truth ")
                             file.write(", ".join(map(str, iteration_scores)) + "\n")
+                            file.write(f", Global accuracy: {global_accuracy:.2f}\n")
                     all_similarity_scores = []
                     break
                 print("*** itr " + str(iteration_count) + "***")
@@ -398,7 +419,7 @@ def main(template_option):
                 print(ground_truth_sql_result)
 
                 # Validate the ChatGPT generated SQL script
-                is_correct, similarity_scores, validation_error = validation(sql_result, ground_truth_sql_result)
+                global_accuracy, is_correct, similarity_scores, validation_error = validation(sql_result, ground_truth_sql_result)
                 all_similarity_scores.append(similarity_scores)
                 print(is_correct)
 
@@ -411,6 +432,8 @@ def main(template_option):
                         file.write(" with iter-")
                         file.write(str(iteration_count))
                         file.write("\t\t[Success]\n")
+                        # Append the global accuracy to the end
+                        #file.write(f", Global accuracy: {global_accuracy:.2f}\n")
                     all_similarity_scores = []
                     break
                 else:
