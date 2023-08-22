@@ -1,9 +1,4 @@
 import openai
-import pymysql
-from pymysql.err import OperationalError
-import difflib
-import numpy as np
-from pymysql.err import ProgrammingError
 import psycopg2
 import json
 from sklearn.metrics.pairwise import cosine_similarity
@@ -11,7 +6,6 @@ from sklearn.feature_extraction.text import CountVectorizer
 import csv
 import re
 from config import OPENAI_API_KEY
-from decimal import Decimal
 
 # openai key -- from config import OPENAI_API_KEY
 # in config.py put OPENAI_API_KEY='your_key'
@@ -36,8 +30,7 @@ def create_connection():
         )
         return conn
     except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
-    return None
+        raise error
 
 
 def extract_last_insert_table_name(query):
@@ -325,7 +318,7 @@ def print_experiment_settings(template_option, target_id, max_target_id, source_
     if target_id == max_target_id:
         print("is " + str(target_id))
     else:
-        print("in [" + str(target_id) + ", " + str(max_target_id) + "]")
+        print("in [" + str(target_id) + ", " + str(max_target_id) + "]", end="")
     print(", source ", end="")
     if source_id == max_source_id:
         print("is " + str(source_id))
@@ -334,17 +327,14 @@ def print_experiment_settings(template_option, target_id, max_target_id, source_
 
 # 5 Samples of Source Data: {sammples}
 # main script
-def main(template_option):
+def main(*args):
+    (template_option, target_id, max_target_id, source_id, max_source_id) = args
+    # Log the starting of set of experiments
+    print_experiment_settings(template_option, target_id, max_target_id, source_id, max_source_id)
+    
     conn = create_connection()
 
     json_file_path = 'chatgpt.json'
-    target_id = 3
-    max_target_id = 3
-    source_id = 1
-    max_source_id = 1
-
-    # Log the starting of set of experiments
-    print_experiment_settings(template_option, target_id, max_target_id, source_id, max_source_id)
 
     while target_id <= max_target_id:
         while source_id <= max_source_id:
@@ -454,5 +444,10 @@ def main(template_option):
 
 
 if __name__ == "__main__":
-    template_option = int(input("Choose template option (1/2/3/4): "))
-    main(template_option)
+    template_option = 4
+    target_id = 3
+    max_target_id = 3
+    source_id = 1
+    max_source_id = 1
+    
+    main(template_option, target_id, max_target_id, source_id, max_source_id)
