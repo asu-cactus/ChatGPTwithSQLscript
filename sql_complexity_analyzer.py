@@ -111,7 +111,12 @@ def plot_complexity_scores_filled_area(queries_arg, complexity_function, group_c
     ax1.tick_params(axis='x', which='both', bottom=False, top=False,
                     labelbottom=False)  # Disable x-axis ticks and labels for ax1
     fig.tight_layout(rect=[0, 0, 0.85, 1])  # Adjust layout to make space for colorbars
+
+    # Save the plot as a PDF file
+    plt.savefig("complexity_correctness.pdf", format="pdf")
+
     plt.show()
+
 
 if __name__ == '__main__':
     data = load_data_from_json("chatgpt.json")
