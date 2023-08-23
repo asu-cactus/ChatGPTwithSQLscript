@@ -1,4 +1,9 @@
 import openai
+import pymysql
+from pymysql.err import OperationalError
+import difflib
+import numpy as np
+from pymysql.err import ProgrammingError
 import psycopg2
 import json
 from sklearn.metrics.pairwise import cosine_similarity
@@ -6,6 +11,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 import csv
 import re
 from config import OPENAI_API_KEY
+from decimal import Decimal
 
 # openai key -- from config import OPENAI_API_KEY
 # in config.py put OPENAI_API_KEY='your_key'
@@ -30,7 +36,8 @@ def create_connection():
         )
         return conn
     except (Exception, psycopg2.DatabaseError) as error:
-        raise error
+        print(error)
+    return None
 
 
 def extract_last_insert_table_name(query):
@@ -313,28 +320,33 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find):
     return prompt, ground_truth, target_data_name
 
 def print_experiment_settings(template_option, target_id, max_target_id, source_id, max_source_id):
-    print("Starting with template" + str(template_option)+" ...")
-    print("Scope: target ", end="")
-    if target_id == max_target_id:
-        print("is " + str(target_id))
-    else:
-        print("in [" + str(target_id) + ", " + str(max_target_id) + "]", end="")
-    print(", source ", end="")
-    if source_id == max_source_id:
-        print("is " + str(source_id))
-    else:
-        print("in [" + str(source_id) + ", " + str(max_source_id) + "]")
+    with open('all_similarity_scores.log', 'a+') as file:
+        file.write("Starting with template" + str(template_option)+" ...\n")
+        file.write("Scope: target ")
+        if target_id == max_target_id:
+            file.write("is " + str(target_id))
+        else:
+            file.write("in [" + str(target_id) + ", " + str(max_target_id) + "]")
+        file.write(", source ")
+        if source_id == max_source_id:
+            file.write("is " + str(source_id))
+        else:
+            file.write("in [" + str(source_id) + ", " + str(max_source_id) + "]")
+        file.write("\n")
 
 # 5 Samples of Source Data: {sammples}
 # main script
-def main(*args):
-    (template_option, target_id, max_target_id, source_id, max_source_id) = args
-    # Log the starting of set of experiments
-    print_experiment_settings(template_option, target_id, max_target_id, source_id, max_source_id)
-    
+def main(template_option):
     conn = create_connection()
 
     json_file_path = 'chatgpt.json'
+    target_id = 2
+    max_target_id = 2
+    source_id = 3
+    max_source_id = 3
+
+    # Log the starting of set of experiments
+    print_experiment_settings(template_option, target_id, max_target_id, source_id, max_source_id)
 
     while target_id <= max_target_id:
         while source_id <= max_source_id:
@@ -374,7 +386,7 @@ def main(*args):
                             file.write(str(count+1))
                             file.write(": ")
                             if iteration_scores[0] == "missmatch":
-                                file.write("miss-match: # of rows in result and ground truth")
+                                file.write("miss-match: # of rows in result and ground truth\n")
                             else:
                                 file.write(", ".join(map(str, iteration_scores)) + "\n")
                         print(accuracy_list)
@@ -444,10 +456,5 @@ def main(*args):
 
 
 if __name__ == "__main__":
-    template_option = 4
-    target_id = 3
-    max_target_id = 3
-    source_id = 1
-    max_source_id = 1
-    
-    main(template_option, target_id, max_target_id, source_id, max_source_id)
+    template_option = int(input("Choose template option (1/2/3/4): "))
+    main(template_option)
