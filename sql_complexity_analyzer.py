@@ -47,6 +47,8 @@ def analyze_sql_complexity(query: str) -> tuple:
         'JOIN', 'INNER JOIN', 'OUTER JOIN', 'LEFT JOIN', 'RIGHT JOIN',
         'CROSS JOIN', 'SELF JOIN', 'FULL JOIN', 'UNION', 'UNION ALL',
         'SUBQUERY', 'WITH', 'EXISTS', 'NOT EXISTS', 'IN', 'NOT IN',
+        'EXTRACT', 'SUM', 'COUNT', 'MIN', 'MAX', 'AVG', 'SUBSTRING',
+        'COALESCE', 'TO_CHAR', 'TO_DATE', 'TO_NUMBER', 'CAST', 'CONVERT',
         'CASE', 'WHEN', 'ELSE', 'END', 'HAVING', 'DISTINCT', 'GROUP BY',
         'ORDER BY', 'LIMIT', 'OFFSET', 'WINDOW', 'OVER', 'PARTITION BY',
         'ROLLUP', 'CUBE', 'GROUPING SETS', 'RECURSIVE', 'PIVOT', 'UNPIVOT'
@@ -60,67 +62,89 @@ def analyze_sql_complexity(query: str) -> tuple:
 
     return keyword_score, keyword_score + nested_score + normalized_length, list(found_keywords)
 
+def analyze_sql_complexity_separate(query: str) -> tuple:
+    complexity_keywords = [
+        'JOIN', 'INNER JOIN', 'OUTER JOIN', 'LEFT JOIN', 'RIGHT JOIN',
+        'CROSS JOIN', 'SELF JOIN', 'FULL JOIN', 'UNION', 'UNION ALL',
+        'SUBQUERY', 'WITH', 'EXISTS', 'NOT EXISTS', 'IN', 'NOT IN',
+        'EXTRACT', 'SUM', 'COUNT', 'MIN', 'MAX', 'AVG', 'SUBSTRING',
+        'COALESCE', 'TO_CHAR', 'TO_DATE', 'TO_NUMBER', 'CAST', 'CONVERT',
+        'CASE', 'WHEN', 'ELSE', 'END', 'HAVING', 'DISTINCT', 'GROUP BY',
+        'ORDER BY', 'LIMIT', 'OFFSET', 'WINDOW', 'OVER', 'PARTITION BY',
+        'ROLLUP', 'CUBE', 'GROUPING SETS', 'RECURSIVE', 'PIVOT', 'UNPIVOT'
+    ]
+
+    tokens = tokenize_sql_query(query)
+    found_keywords = set(tokens).intersection(complexity_keywords)
+    keyword_score = len(found_keywords)
+    nested_score = query.upper().count('( SELECT')
+    length_score = len(query)/200
+
+    return keyword_score, nested_score, length_score
 
 def plot_complexity_scores_filled_area(queries_arg, complexity_function, group_counts_arg, correctness_scores):
-    complexity_scores = [complexity_function(query)[1] for query in queries_arg]
+    keyword_counts, nested_scores, lengths = zip(*[complexity_function(query) for query in queries_arg])
     correctness_percent = [score * 100 for score in correctness_scores]
+
     df = pd.DataFrame({
         'Query Number': range(1, len(queries_arg) + 1),
-        'Complexity Score': complexity_scores,
+        'Keyword Count': keyword_counts,
+        'Normalized Length': lengths,
+        'Correctness Percent': correctness_percent
     })
 
     sns.set_theme(style="whitegrid")
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 6), sharex=True, gridspec_kw={'hspace': 0.05})
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 9), sharex=True, gridspec_kw={'hspace': 0.1})
 
-    # Set up color mappings
-    norm_complexity = plt.Normalize(0, df['Complexity Score'].max())
+    # Set up color mappings for gradient fills
+    norm_keyword_count = plt.Normalize(0, df['Keyword Count'].max())
+    norm_length = plt.Normalize(0, df['Normalized Length'].max())
 
-    # Plot complexity on ax1
+    # Plot Keyword Count on ax1 with a colorful colormap
     for i in range(1, len(df)):
-        ax1.fill_between(df['Query Number'].iloc[i - 1:i + 1], 0, df['Complexity Score'].iloc[i - 1:i + 1],
-                         color=plt.cm.RdYlBu_r(norm_complexity(df['Complexity Score'].iloc[i])))
+        ax1.fill_between(df['Query Number'].iloc[i - 1:i + 1], 0, df['Keyword Count'].iloc[i - 1:i + 1],
+                         color=plt.cm.RdYlBu_r(norm_keyword_count(df['Keyword Count'].iloc[i])))
 
-    # Plot correctness on ax2 using a red-green color map
+    # Plot Normalized Lengths on ax2 with another colorful colormap
     for i in range(1, len(df)):
-        ax2.fill_between(df['Query Number'].iloc[i - 1:i + 1], 0, correctness_percent[i - 1],
+        ax2.fill_between(df['Query Number'].iloc[i - 1:i + 1], 0, df['Normalized Length'].iloc[i - 1:i + 1],
+                         color=plt.cm.RdYlBu_r(norm_length(df['Normalized Length'].iloc[i])))
+
+    # Plot Correctness on ax3 using a red-green color map
+    for i in range(1, len(df)):
+        ax3.fill_between(df['Query Number'].iloc[i - 1:i + 1], 0, df['Correctness Percent'].iloc[i - 1:i + 1],
                          color=sns.diverging_palette(10, 133, as_cmap=True)(correctness_scores[i - 1]))
 
-    # Draw vertical dashed lines to divide groups
+    # Common code for plotting (e.g., adding vertical dashed lines)
     boundaries = np.cumsum(group_counts_arg)
     for boundary in boundaries[:-1]:
-        ax1.axvline(x=boundary, color='gray', linestyle='--', linewidth=0.8)
-        ax2.axvline(x=boundary, color='gray', linestyle='--', linewidth=0.8)
+        for ax in (ax1, ax2, ax3):
+            ax.axvline(x=boundary, color='gray', linestyle='--', linewidth=0.8)
 
-    # Add color bars for legends at the right of the plot
-    ax1_pos = ax1.get_position()
-    cbar_ax1 = fig.add_axes([ax1_pos.x1 + 0.02, ax1_pos.y0, 0.02, ax1_pos.height])
-    plt.colorbar(plt.cm.ScalarMappable(cmap="RdYlBu_r", norm=norm_complexity), cax=cbar_ax1,
-                 orientation="vertical").set_label('Complexity Score')
-
-    ax2_pos = ax2.get_position()
-    cbar_ax2 = fig.add_axes([ax2_pos.x1 + 0.02, ax2_pos.y0, 0.02, ax2_pos.height])
-    plt.colorbar(plt.cm.ScalarMappable(cmap=sns.diverging_palette(10, 133, as_cmap=True), norm=plt.Normalize(0, 100)),
-                 cax=cbar_ax2, orientation="vertical").set_label('Correctness Score (%)')
+    # Add color bars for legends
+    fig.colorbar(plt.cm.ScalarMappable(cmap="RdYlBu_r", norm=norm_keyword_count), ax=ax1, orientation="vertical").set_label('Keyword Count')
+    fig.colorbar(plt.cm.ScalarMappable(cmap="RdYlBu_r", norm=norm_length), ax=ax2, orientation="vertical").set_label('Normalized Length')
+    fig.colorbar(plt.cm.ScalarMappable(cmap=sns.diverging_palette(10, 133, as_cmap=True), norm=plt.Normalize(0, 100)), ax=ax3, orientation="vertical").set_label('Correctness (%)')
 
     # Set labels and title
+    ax1.set_ylabel('Keyword Count')
+    ax2.set_ylabel('Normalized Length')
+    ax3.set_ylabel('Correctness (%)')
+    ax3.set_xlabel('Query Number')
+
+    # Set the main title for the figure
     fig.suptitle('Complexity and Correctness Scores of SQL Queries')
-    ax2.set_xlabel('Query Number')
-    ax1.set_ylabel('Complexity Score')
-    ax2.set_ylabel('Correctness Score (%)')
 
-    ax1.tick_params(axis='x', which='both', bottom=False, top=False,
-                    labelbottom=False)  # Disable x-axis ticks and labels for ax1
-    fig.tight_layout(rect=[0, 0, 0.85, 1])  # Adjust layout to make space for colorbars
-
-    # Save the plot as a PDF file
+    # Adjust layout and save the plot
+    fig.tight_layout(rect=[0, 0, 0.92, 0.96])
     plt.savefig("complexity_correctness.pdf", format="pdf")
-
     plt.show()
+
 
 
 if __name__ == '__main__':
     data = load_data_from_json("chatgpt.json")
     queries = [str(entry["Ground Truth SQL"]).replace("\n", " ") for entry in data]
     group_counts = count_cases_in_groups(data)
-    correctness = extract_correctness(data, "Prompt-1 Results")
-    plot_complexity_scores_filled_area(queries, analyze_sql_complexity, group_counts, correctness)
+    correctness = extract_correctness(data, "Prompt-2 Results")
+    plot_complexity_scores_filled_area(queries, analyze_sql_complexity_separate, group_counts, correctness)
