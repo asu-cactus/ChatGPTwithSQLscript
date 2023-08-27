@@ -43,16 +43,10 @@ def tokenize_sql_query(query: str) -> list:
 
 
 def analyze_sql_complexity(query: str) -> tuple:
-    complexity_keywords = [
-        'JOIN', 'INNER JOIN', 'OUTER JOIN', 'LEFT JOIN', 'RIGHT JOIN',
-        'CROSS JOIN', 'SELF JOIN', 'FULL JOIN', 'UNION', 'UNION ALL',
-        'SUBQUERY', 'WITH', 'EXISTS', 'NOT EXISTS', 'IN', 'NOT IN',
-        'EXTRACT', 'SUM', 'COUNT', 'MIN', 'MAX', 'AVG', 'SUBSTRING',
-        'COALESCE', 'TO_CHAR', 'TO_DATE', 'TO_NUMBER', 'CAST', 'CONVERT',
-        'CASE', 'WHEN', 'ELSE', 'END', 'HAVING', 'DISTINCT', 'GROUP BY',
-        'ORDER BY', 'LIMIT', 'OFFSET', 'WINDOW', 'OVER', 'PARTITION BY',
-        'ROLLUP', 'CUBE', 'GROUPING SETS', 'RECURSIVE', 'PIVOT', 'UNPIVOT'
-    ]
+    with open('keywords.txt', 'r') as file:
+        complexity_keywords = file.readlines()
+        # Strip any white-space characters (like newline) and surround each keyword with quotes
+        complexity_keywords = ["{}".format(keyword.strip()) for keyword in complexity_keywords]
 
     tokens = tokenize_sql_query(query)
     found_keywords = set(tokens).intersection(complexity_keywords)
@@ -63,22 +57,16 @@ def analyze_sql_complexity(query: str) -> tuple:
     return keyword_score, keyword_score + nested_score + normalized_length, list(found_keywords)
 
 def analyze_sql_complexity_separate(query: str) -> tuple:
-    complexity_keywords = [
-        'JOIN', 'INNER JOIN', 'OUTER JOIN', 'LEFT JOIN', 'RIGHT JOIN',
-        'CROSS JOIN', 'SELF JOIN', 'FULL JOIN', 'UNION', 'UNION ALL',
-        'SUBQUERY', 'WITH', 'EXISTS', 'NOT EXISTS', 'IN', 'NOT IN',
-        'EXTRACT', 'SUM', 'COUNT', 'MIN', 'MAX', 'AVG', 'SUBSTRING',
-        'COALESCE', 'TO_CHAR', 'TO_DATE', 'TO_NUMBER', 'CAST', 'CONVERT',
-        'CASE', 'WHEN', 'ELSE', 'END', 'HAVING', 'DISTINCT', 'GROUP BY',
-        'ORDER BY', 'LIMIT', 'OFFSET', 'WINDOW', 'OVER', 'PARTITION BY',
-        'ROLLUP', 'CUBE', 'GROUPING SETS', 'RECURSIVE', 'PIVOT', 'UNPIVOT'
-    ]
+    with open('keywords.txt', 'r') as file:
+        complexity_keywords = file.readlines()
+        # Strip any white-space characters (like newline) and surround each keyword with quotes
+        complexity_keywords = ["{}".format(keyword.strip()) for keyword in complexity_keywords]
 
     tokens = tokenize_sql_query(query)
     found_keywords = set(tokens).intersection(complexity_keywords)
     keyword_score = len(found_keywords)
     nested_score = query.upper().count('( SELECT')
-    length_score = len(query)/200
+    length_score = len(query)
 
     return keyword_score, nested_score, length_score
 
