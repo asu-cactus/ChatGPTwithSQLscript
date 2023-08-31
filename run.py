@@ -151,8 +151,8 @@ def main(*args):
 
 if __name__ == "__main__":
     json_file_path = 'chatgpt.json'
-    template_option = 4
-    target_id, max_target_id = 2, 2
-    source_id, max_source_id = 10, 10
+    template_option = 1
+    target_id, max_target_id = 26, 26
+    source_id, max_source_id = 1, 1
     print_experiment_settings(template_option, target_id, max_target_id, source_id, max_source_id)
     main(json_file_path, template_option, target_id, max_target_id, source_id, max_source_id)
