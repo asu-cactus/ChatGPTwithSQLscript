@@ -2,23 +2,19 @@ import openai
 import json
 from config import OPENAI_API_KEY
 
-
 openai.api_key = OPENAI_API_KEY
 
 
 def chat_with_gpt(prompt):
     """ Interact with chatGPT model and extract SQL script from the response. """
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo-16k",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0,
-            max_tokens=10000,
-        )
-        complete_response = response.choices[0]['message']['content']
-        return ''.join(complete_response.split("```sql")[1].split("```")[0].strip())
-    except Exception as e:
-        return f"Error: {str(e)}"
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo-16k",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0,
+        max_tokens=16000,
+    )
+    complete_response = response.choices[0]['message']['content']
+    return ''.join(complete_response.split("```sql")[1].split("```")[0].strip())
 
 
 def generate_prompt(json_file_path, template_option, source_data_name_to_find):
@@ -138,9 +134,9 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find):
         Please quote the returned SQL script to perform these tasks between "```sql\n" and "\n```".
         Remember, accuracy and efficient handling of time data are paramount for the firm.
         """
-
+    else:
+        raise ValueError("Invalid template option {template_option}.")
     print(prompt)
-    print("Ground Truth SQL Query:")
-    print(ground_truth)
+    print(f"Ground Truth SQL Query: {ground_truth}")
 
     return prompt, ground_truth, target_data_name
