@@ -68,7 +68,7 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find, o
     if template_option == 1:
         prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}. Please delete the table before creating it if the first table exists. 
 
-        Second, insert the following row(s) into the first table:
+        Second, insert the following row(s) into the first table (treat empty value as NULL):
 
         {samples}
 
@@ -85,7 +85,7 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find, o
     elif template_option == 2:
         prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}. Please delete the table before creating it if the first table exists. 
 
-        Second, insert the following row(s) into the first table and please don't remove any values:
+        Second, insert the following row(s) into the first table and please don't remove any values (treat empty value as NULL):
 
         {samples}
 
@@ -105,7 +105,7 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find, o
     elif template_option == 3:
         prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}. Please delete the table before creating it if the first table exists. 
 
-        Second, insert the following row(s) into the first table and please don't remove any values:
+        Second, insert the following row(s) into the first table and please don't remove any values (treat empty value as NULL):
 
         {samples}
 
@@ -125,14 +125,19 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find, o
 
         """
     elif template_option == 4:
-        prompt = f"""You are a skilled Postgres SQL developer. Let's perform some tasks:
+        prompt = f"""You are a skilled Postgres SQL developer. 
+        You're consulting for a tech firm working with Postgres databases. 
+        Their primary focus is ensuring that time-related operations, especially those dealing with TIMESTAMP data types, are accurate and efficient.
+        Let's perform some tasks:
         1. Creating the {source_data_name} Table:
         - Check if a table named {source_data_name} exists. If it does, delete it.
         - Create a new table named {source_data_name}. This table should have exact attributes from the following 
         schema: {source_data_schema}.
         - Note:{source_data_description}
         2. Populating the {source_data_name} Table:
-        - Insert the provided rows {samples} into the {source_data_name} table.
+        - Insert the provided rows (treat empty value as NULL): 
+        {samples} 
+        into the {source_data_name} table.
         3. Creating the {target_data_name} Table:
         - Check if a table named {target_data_name} exists. If it does, delete it.
         - Create a new table named {target_data_name}. This table should have exact attributes from the following 
@@ -140,9 +145,11 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find, o
         - Important: {target_data_description}
         4. Transforming Data from {source_data_name} to {target_data_name}:
         - Write a SQL transformation query to insert all rows from the {source_data_name} table to the {target_data_name} table.
+        - Briefly explain your logic for the transformation.
         - Transformation hints: {schema_change_hints}
         Please don't remove the {source_data_name} table, because we need it for validation.
         Please quote the returned SQL script to perform these tasks between "```sql\n" and "\n```".
+        Remember, accuracy and efficient handling of time data are paramount for the firm.
         """
     elif template_option == 5:
         prompt = f"""
@@ -180,7 +187,7 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find, o
         Here is an example of the task:
         
         First, you must create the first table named {source_data_name_0} with only the given attributes: {source_data_schema_0}. Please delete the table before creating it if the first table exists. 
-        Second, insert the following row(s) into the first table:
+        Second, insert the following row(s) into the first table (treat empty value as NULL):
         {samples_0}
         Third, you must create a second table named {target_data_name_0} with only the given attributes: {target_data_schema_0}. Please delete the table before creating it if the first table exists.
         Finally, insert all rows from the first table into the second table, note that the selection clause in the insert statement should ignore attributes that are not needed.
@@ -194,7 +201,7 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find, o
         Now, here is your task:
         
         First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}. Please delete the table before creating it if the first table exists. 
-        Second, insert the following row(s) into the first table:
+        Second, insert the following row(s) into the first table (treat empty value as NULL):
         {samples}
         Third, you must create a second table named {target_data_name} with only the given attributes: {target_data_schema}. Please delete the table before creating it if the first table exists.
         Finally, insert all rows from the first table into the second table, note that the selection clause in the insert statement should ignore attributes that are not needed.
