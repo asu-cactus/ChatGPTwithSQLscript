@@ -62,25 +62,34 @@ def validation(sql_result, ground_truth, tolerance=1e-10):
 # 5 Samples of Source Data: {sammples}
 # main script
 def main(
-    json_file_path, 
     template_option, 
     target_id, 
     max_target_id, 
     source_id, 
     max_source_id,
+    oneshot_source_id=0,
     max_iterations=5,
+    json_file_path='chatgpt.json',
 ):
     conn = create_connection()
+    print("Connection established.")
+    print(f"target_id: {target_id}, max_target_id: {max_target_id}, source_id: {source_id}, max_source_id: {max_source_id}")
     while target_id <= max_target_id:
         while source_id <= max_source_id:
             # Source Data Name to find
             source_data_name_to_find = "Source" + str(target_id) + "_" + str(source_id)
             source_id = source_id + 1
             print(source_data_name_to_find)
+            
             # Generate the prompt for the chatGPT model
-            prompt, ground_truth_query, target_data_name = generate_prompt(json_file_path, template_option,
+            if oneshot_source_id == 0:
+                prompt, ground_truth_query, target_data_name = generate_prompt(json_file_path, template_option,
                                                                                source_data_name_to_find)
-      
+            else:
+                oneshot_data_name_to_find = f"Source{target_id}_{oneshot_source_id}"
+                prompt, ground_truth_query, target_data_name = generate_prompt(json_file_path, template_option,
+                                                                               source_data_name_to_find, oneshot_data_name_to_find)
+           
 
             # Create a list to store similarity scores of each iteration
             all_similarity_scores = []
@@ -145,9 +154,10 @@ def main(
 
 
 if __name__ == "__main__":
-    json_file_path = 'chatgpt.json'
+    
     template_option = 1
     target_id, max_target_id = 26, 26
     source_id, max_source_id = 1, 1
     print_experiment_settings(template_option, target_id, max_target_id, source_id, max_source_id)
-    main(json_file_path, template_option, target_id, max_target_id, source_id, max_source_id)
+    oneshot_source_id = 0 # Set to 0 to disable oneshot
+    main(template_option, target_id, max_target_id, source_id, max_source_id, oneshot_source_id=oneshot_source_id)

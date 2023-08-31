@@ -49,21 +49,24 @@ This repository contains Python scripts designed to automate the generation of S
 
 ## Usage
 
-1. Update the `config.py` with your OpenAI API key.
-2. Run the `run.py` script to start the experiment:
+1. Create a `config.py` file and put your OpenAI API key there.
+    ```
+    OPENAI_API_KEY = "{your_openai_api_key}"
+    ```
+2. Run the run.py script to start the experiment:
     ```bash
     python run.py
     ```
-3. You can set the template_option,source,target in the run.py.
+3. You can set the configurations such as template_option, source, target in run.py. Here's an example
     ```
     template_option = 1
     target_id, max_target_id = 26, 26
     source_id, max_source_id = 1, 1
     ```
-4. Detailed template_option are in the gpt.py.
+4. Detailed template_option are in the gpt.py. Option 3 and 4 both belong to Option 3 in the paper, and Option 5 corresponds to Option 4 in the paper, etc.
 5. `target_id`,`max_target_id` mean the first group and the last group the script will iterate.
 6. `source_id`, `max_source_id` mean the first source and the last source the script will iterate.
-7. The groups in this script are different from the groups in paper.Please refer to `chatgpt.xlsx` to find the corresponding groups
+7. The groups in this script are different from the groups in paper. Please refer to `chatgpt.xlsx` to find the corresponding groups
 
 ---
 
