@@ -11,7 +11,7 @@ def chat_with_gpt(prompt):
         model="gpt-3.5-turbo-16k",
         messages=[{"role": "user", "content": prompt}],
         temperature=0,
-        max_tokens=16000,
+        max_tokens=10000,
     )
     complete_response = response.choices[0]['message']['content']
     return ''.join(complete_response.split("```sql")[1].split("```")[0].strip())
