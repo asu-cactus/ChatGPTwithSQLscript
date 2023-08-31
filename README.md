@@ -13,18 +13,18 @@ This repository contains Python scripts designed to automate the generation of S
 - [Usage](#usage)
 - [Scripts](#scripts)
 - [Contributing](#contributing)
-- [License](#license)
 
 ---
 
 ## Dependencies
 
-- Python 3.x
-- `pymysql`
-- `psycopg2`
-- `csv`
-- `re`
-- `difflib`
+- Python 3.8+
+- `pandas`
+- `openai`
+- `matplotlib`
+- `seaborn`
+- `sqlparse`
+- `psycopg2-binary`
 - `numpy`
 - `sklearn`
 
@@ -54,12 +54,21 @@ This repository contains Python scripts designed to automate the generation of S
     ```bash
     python run.py
     ```
+3. You can set the template_option,source,target in the run.py.
+    ```
+    template_option = 1
+    target_id, max_target_id = 26, 26
+    source_id, max_source_id = 1, 1
+    ```
+4. Detailed template_option are in the gpt.py.
+5. `target_id`,`max_target_id` mean the first group and the last group the script will iterate.
+6. `source_id`, `max_source_id` mean the first source and the last source the script will iterate.
+7. The groups in this script are different from the groups in paper.Please refer to `chatgpt.xlsx` to find the corresponding groups
 
 ---
 
 ## Scripts
 
-- `Generate_GTSQL.py`: Generates ground truth SQL queries.
 - `excel2json.py`: Converts Excel data to JSON format.
 - `gpt.py`: Interacts with the GPT-3 model to generate SQL queries.
 - `join.py`: Handles JOIN operations in SQL.
@@ -75,7 +84,4 @@ Feel free to fork the project and submit a pull request with your changes!
 
 ---
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
