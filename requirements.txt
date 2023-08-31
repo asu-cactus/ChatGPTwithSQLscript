@@ -1,0 +1,8 @@
+pandas
+openai
+matplotlib
+seaborn
+sqlparse
+psycopg2-binary
+numpy
+sklearn
