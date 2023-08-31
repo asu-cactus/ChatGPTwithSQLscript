@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository contains Python scripts designed to automate the generation of SQL queries using the GPT-3 model from OpenAI. It also includes utility functions for database operations, file reading, logging, and similarity calculations.
+This repository contains Python scripts designed to automate the generation of SQL queries using the GPT-3.5 model from OpenAI. It also includes utility functions for database operations, file reading, logging, and similarity calculations.
 
 ---
 
