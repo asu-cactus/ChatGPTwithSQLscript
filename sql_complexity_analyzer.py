@@ -1,29 +1,25 @@
 import json
 import re
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import sqlparse
 
-
+# Load JSON data from a given filepath
 def load_data_from_json(file_path: str) -> dict:
     with open(file_path, 'r') as file:
         return json.load(file)
 
-
+# Count the number of cases per group based on the Source Data Name pattern
 def count_cases_in_groups(data: dict) -> list:
-    group_case_count = {}
     pattern = re.compile(r"Source(\d+)_(\d+)")
+    group_case_count = {
+        int(match.group(1)): group_case_count.get(int(match.group(1)), 0) + 1
+        for entry in data if (match := pattern.match(entry['Source Data Name']))
+    }
+    return [group_case_count.get(i, 0) for i in range(1, max(group_case_count) + 1)]
 
-    for entry in data:
-        match = pattern.match(entry['Source Data Name'])
-        if match:
-            group = int(match.group(1))
-            group_case_count[group] = group_case_count.get(group, 0) + 1
-
-    return [group_case_count.get(i, 0) for i in range(1, max(group_case_count.keys()) + 1)]
-
-
+# Extract correctness scores from the data
 def extract_correctness(data: dict, correctness_name: str) -> list:
     def extract_score(entry):
         try:
@@ -31,54 +27,54 @@ def extract_correctness(data: dict, correctness_name: str) -> list:
         except ValueError:
             print(f"Problematic entry: {entry.get(correctness_name)}")
             return 0.0
-
     return [extract_score(entry) for entry in data]
 
+# Extract SQL keywords from a query while filtering out unwanted patterns
+def extract_keywords(query: str) -> list:
+    parsed = sqlparse.parse(query)
+    keywords = []
 
-def tokenize_sql_query(query: str) -> list:
-    # Remove comments and extract words
-    query = re.sub(r'--.*\n', '', query)
-    query = re.sub(r'/\*.*?\*/', '', query, flags=re.DOTALL)
-    return re.findall(r'\b\w+\b', query.upper())
+    def extract_tokens(token_list):
+        for token in token_list:
+            # Check for functions (like TO_CHAR)
+            if isinstance(token, sqlparse.sql.Function):
+                keywords.append(token.get_name().upper())
 
+            # If it's a simple keyword
+            elif token.ttype in (sqlparse.tokens.Keyword.DML, sqlparse.tokens.Keyword):
+                keywords.append(token.value.upper())
 
-def analyze_sql_complexity(query: str) -> tuple:
-    with open('keywords.txt', 'r') as file:
-        complexity_keywords = file.readlines()
-        # Strip any white-space characters (like newline) and surround each keyword with quotes
-        complexity_keywords = ["{}".format(keyword.strip()) for keyword in complexity_keywords]
+            # Handle other potential keywords in nested tokens
+            elif token.ttype is None:
+                extract_tokens(token.tokens)
 
-    tokens = tokenize_sql_query(query)
-    found_keywords = set(tokens).intersection(complexity_keywords)
-    keyword_score = len(found_keywords)
-    nested_score = query.upper().count('( SELECT')
-    normalized_length = len(query) / 200
+    for statement in parsed:
+        extract_tokens(statement.tokens)
 
-    return keyword_score, keyword_score + nested_score + normalized_length, list(found_keywords)
+    # Remove duplicates
+    keywords = list(set(keywords))
 
+    # Filtering out unwanted keywords based on a pattern (e.g., table or schema names)
+    unwanted_patterns = ["SOURCE", "TARGET"]
+    return [kw for kw in set(keywords) if not any(pattern in kw for pattern in unwanted_patterns)]
+
+# Analyze the complexity of a SQL query based on keyword count, nesting, and length
 def analyze_sql_complexity_separate(query: str) -> tuple:
-    with open('keywords.txt', 'r') as file:
-        complexity_keywords = file.readlines()
-        # Strip any white-space characters (like newline) and surround each keyword with quotes
-        complexity_keywords = ["{}".format(keyword.strip()) for keyword in complexity_keywords]
+    found_keywords = extract_keywords(query)
+    return (
+        len(found_keywords),
+        query.upper().count('( SELECT'),
+        len(query)
+    )
 
-    tokens = tokenize_sql_query(query)
-    found_keywords = set(tokens).intersection(complexity_keywords)
-    keyword_score = len(found_keywords)
-    nested_score = query.upper().count('( SELECT')
-    length_score = len(query)
-
-    return keyword_score, nested_score, length_score
-
+# Plot complexity scores using a filled area chart
 def plot_complexity_scores_filled_area(queries_arg, complexity_function, group_counts_arg, correctness_scores):
     keyword_counts, nested_scores, lengths = zip(*[complexity_function(query) for query in queries_arg])
-    correctness_percent = [score * 100 for score in correctness_scores]
-
     df = pd.DataFrame({
         'Query Number': range(1, len(queries_arg) + 1),
         'Keyword Count': keyword_counts,
         'Normalized Length': lengths,
-        'Correctness Percent': correctness_percent
+        'Correctness Percent': [score * 100 for score in correctness_scores]
     })
 
     sns.set_theme(style="whitegrid")
@@ -130,6 +126,7 @@ def plot_complexity_scores_filled_area(queries_arg, complexity_function, group_c
 
 
 
+# Entry point of the script
 if __name__ == '__main__':
     data = load_data_from_json("chatgpt.json")
     queries = [str(entry["Ground Truth SQL"]).replace("\n", " ") for entry in data]

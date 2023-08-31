@@ -51,7 +51,7 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find):
     if template_option == 1:
         prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}. Please delete the table before creating it if the first table exists. 
 
-        Second, insert the following row(s) into the first table:
+        Second, insert the following row(s) into the first table (treat empty value as NULL):
 
         {samples}
 
@@ -72,7 +72,7 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find):
     elif template_option == 2:
         prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}. Please delete the table before creating it if the first table exists. 
 
-        Second, insert the following row(s) into the first table and please don't remove any values:
+        Second, insert the following row(s) into the first table and please don't remove any values (treat empty value as NULL):
 
         {samples}
 
@@ -92,7 +92,7 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find):
     elif template_option == 3:
         prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}. Please delete the table before creating it if the first table exists. 
 
-        Second, insert the following row(s) into the first table and please don't remove any values:
+        Second, insert the following row(s) into the first table and please don't remove any values (treat empty value as NULL):
 
         {samples}
 
@@ -122,7 +122,7 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find):
         schema: {source_data_schema}.
         - Note:{source_data_description}
         2. Populating the {source_data_name} Table:
-        - Insert the provided rows: 
+        - Insert the provided rows (treat empty value as NULL): 
         {samples} 
         into the {source_data_name} table.
         3. Creating the {target_data_name} Table:

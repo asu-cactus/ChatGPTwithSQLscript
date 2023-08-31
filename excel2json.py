@@ -26,7 +26,6 @@ def convert_excel_to_json(excel_file_path, json_file_path):
         "Prompt-3 Results",
         "Prompt-2 Results",
         "Prompt-1 Results",
-        "Complexity",
         "Remark or Note"
     ]
 
