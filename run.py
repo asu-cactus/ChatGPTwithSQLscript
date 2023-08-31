@@ -9,7 +9,7 @@ def validation(sql_result, ground_truth, tolerance=1e-10):
 
     if len(sql_result) != len(ground_truth) or len(sql_result[0]) != len(ground_truth[0]):
         validation_error = "Different number of rows or columns in the results and ground truth."
-        return 0.0, False, ["missmatch"], validation_error
+        return 0.0, False, ["mismatch"], validation_error
 
     # Initialize a list to store similarity scores
     similarity_scores = []
@@ -27,12 +27,12 @@ def validation(sql_result, ground_truth, tolerance=1e-10):
 
         try:
             float(sql_column[0])  # Try converting the first value
-        except (ValueError, TypeError):
+        except:
             is_sql_numeric = False
 
         try:
             float(truth_column[0])
-        except (ValueError, TypeError):
+        except:
             is_truth_numeric = False
 
         if is_sql_numeric and is_truth_numeric:
@@ -61,8 +61,15 @@ def validation(sql_result, ground_truth, tolerance=1e-10):
 
 # 5 Samples of Source Data: {sammples}
 # main script
-def main(*args):
-    (json_file_path, template_option, target_id, max_target_id, source_id, max_source_id) = args
+def main(
+    json_file_path, 
+    template_option, 
+    target_id, 
+    max_target_id, 
+    source_id, 
+    max_source_id,
+    max_iterations=5,
+):
     conn = create_connection()
     while target_id <= max_target_id:
         while source_id <= max_source_id:
@@ -71,12 +78,9 @@ def main(*args):
             source_id = source_id + 1
             print(source_data_name_to_find)
             # Generate the prompt for the chatGPT model
-            if template_option in [1, 2, 3, 4]:
-                prompt, ground_truth_query, target_data_name = generate_prompt(json_file_path, template_option,
+            prompt, ground_truth_query, target_data_name = generate_prompt(json_file_path, template_option,
                                                                                source_data_name_to_find)
-            else:
-                print("Invalid template option.")
-                return
+      
 
             # Create a list to store similarity scores of each iteration
             all_similarity_scores = []
@@ -90,27 +94,22 @@ def main(*args):
             while True:
                 iteration_count += 1
                 # check if reached to max number of iterations
-                if iteration_count > 5:
+                if iteration_count > max_iterations:
                     log_experiment_failed(target_data_name, source_data_name_to_find, iteration_count,
                                             all_similarity_scores, accuracy_list)
                     all_similarity_scores = []
                     break
-                print("*** itr " + str(iteration_count) + "***")
+                print(f"*** itr {iteration_count} ***")
                 # interact with gpt
                 gpt_output = chat_with_gpt(prompt)
                 print("SQL Script Extracted from GPT Response:")
                 print(gpt_output)
-                if "Error:" in gpt_output:
-                    prompt += " GPT Error: " + gpt_output
-                    continue
 
                 # Execute the SQL script on the specified table
                 sql_result = execute_sql(conn, gpt_output)
-                print("SQL Result:")
-                print(sql_result)
+                print(f"SQL Result: {sql_result}")
                 if "Error:" in sql_result:
-                    prompt += "\n Error in the previous response:"
-                    prompt += sql_result
+                    prompt += f"\n Error in the previous response: {sql_result}"
                     print(prompt)
                     accuracy_list.append(0.0)
                     continue
@@ -120,10 +119,8 @@ def main(*args):
                     ground_truth_sql_result = execute_sql(conn, ground_truth_query)
                     validation_table_created = True
 
-                print("\nGround Truth SQL Query:")
-                print(ground_truth_query)
-                print("\nGround Truth SQL Query Result:")
-                print(ground_truth_sql_result)
+                print(f"\nGround Truth SQL Query: {ground_truth_query}")
+                print(f"\nGround Truth SQL Query Result: {ground_truth_sql_result}")
 
                 # Validate the ChatGPT generated SQL script
                 case_accuracy, is_correct, similarity_scores, validation_error = validation(sql_result,
@@ -138,9 +135,7 @@ def main(*args):
                     break
                 else:
                     # to be revised
-                    prompt += "The returned SQL script can run, but the execution result of the SQL is wrong: " + str(
-                        validation_error) + " Please try again."
-
+                    prompt += f"The returned SQL script can run, but the execution result of the SQL is wrong: {validation_error}. Please try again."
                     print(prompt + "\n")
                     continue
         target_id = target_id + 1
