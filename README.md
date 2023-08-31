@@ -54,19 +54,16 @@ This repository contains Python scripts designed to automate the generation of S
     ```bash
     python run.py
     ```
-
-3.You can set the template_option,source,target in the run.py.
-
+3. You can set the template_option,source,target in the run.py.
     ```
     template_option = 1
     target_id, max_target_id = 26, 26
     source_id, max_source_id = 1, 1
     ```
-4.Detailed template_option are in the gpt.py.
-
-5.target_id,max_target_id mean the first group and the last group the script will iterate.
--source_id, max_source_id mean the first source and the last source the script will iterate.
- (The groups in this script are different from the groups in paper.Please refer to `chatgpt.xlsx` to find the corresponding groups)
+4. Detailed template_option are in the gpt.py.
+5. `target_id`,`max_target_id` mean the first group and the last group the script will iterate.
+6. `source_id`, `max_source_id` mean the first source and the last source the script will iterate.
+7. The groups in this script are different from the groups in paper.Please refer to `chatgpt.xlsx` to find the corresponding groups
 
 ---
 
