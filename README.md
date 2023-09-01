@@ -57,16 +57,31 @@ This repository contains Python scripts designed to automate the generation of S
     ```bash
     python run.py
     ```
-3. You can set the configurations such as template_option, source, target in run.py. Here's an example
+3. Pick a dataset from out benchmark: {‘Smart Building’, ‘COVID-19 & Machine Log’,Commercial dataset-1’, ‘Commercial dataset-2’} and change the ‘excel_file_path’ and ‘json_file_path’ in ‘excel2json.py’ accordingly. Here is the link for the benchmark dataset <link>
+    ````
+    # Path to the Excel file
+    excel_file_path = '<dataset_you_picked>.xlsx'
+    
+    
+    # Path to save the JSON file
+    json_file_path = <dataset_you_picked>.json'
+    ```
+4. Run the `excel2json.py` script to convert the .xlsx benchmark dataset to .json format:
+    ```bash
+    python excel2json.py
+    ```
+5. You can set the configurations such as template_option, source, target in run.py. Here's an example
     ```
     template_option = 1
-    target_id, max_target_id = 26, 26
+    target_id, max_target_id = 10, 10
     source_id, max_source_id = 1, 1
     ```
-4. Detailed template_option are in the gpt.py. Option 3 and 4 both belong to Option 3 in the paper, and Option 5 corresponds to Option 4 in the paper, etc.
-5. `target_id`,`max_target_id` mean the first group and the last group the script will iterate.
-6. `source_id`, `max_source_id` mean the first source and the last source the script will iterate.
-7. The groups in this script are different from the groups in paper. Please refer to `chatgpt.xlsx` to find the corresponding groups
+    `target_id`,`max_target_id` mean the first group and the last group the script will iterate. `source_id`, `max_source_id` mean the first source and the last source the script will iterate.
+6.  Run the run.py script to start the experiment:
+    ```bash
+    python run.py
+    ```
+Note: Detailed template_option are in the gpt.py. Option 3 and 4 both belong to Option 3 in the paper, and Option 5 corresponds to Option 4 in the paper, etc.
 
 ---
 
