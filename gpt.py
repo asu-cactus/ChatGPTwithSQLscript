@@ -5,7 +5,7 @@ from config import OPENAI_API_KEY
 openai.api_key = OPENAI_API_KEY
 
 
-def chat_with_gpt(prompt):
+def chat_with_gpt(prompt,is_sql):
     """ Interact with chatGPT model and extract SQL script from the response. """
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-16k",
@@ -14,9 +14,14 @@ def chat_with_gpt(prompt):
         max_tokens=10000,
     )
     complete_response = response.choices[0]['message']['content']
-    return ''.join(complete_response.split("```sql")[1].split("```")[0].strip())
+    if is_sql:
+        return ''.join(complete_response.split("```sql")[1].split("```")[0].strip())
+    else:
+        return complete_response
 
-def generate_prompt(json_file_path, template_option, source_data_name_to_find, oneshot_data_name_to_find=None):
+
+
+def generate_prompt(json_file_path, template_option, output_table,source_data_name_to_find, oneshot_data_name_to_find=None):
     # Read the JSON file
     with open(json_file_path, 'r') as file:
         data_list = json.load(file)
@@ -257,6 +262,24 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find, o
         - Transformation hints: {schema_change_hints}
         Please don't remove the {source_data_name} table, because we need it for validation.
         Please quote the returned SQL script to perform these tasks between "```sql\n and "\n```".
+        """
+    elif template_option == 8:
+        prompt = f"""
+        You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {target_data_name} with only the given attributes: {target_data_schema}. Please delete the table before creating it if the first table exists. 
+
+        Second, insert the following row(s) into the first table:
+
+        {output_table}
+
+        Third, you must create a second table named {source_data_name} with only the given attributes: {source_data_schema}. Please delete the table before creating it if the first table exists.
+
+        Finally, insert all rows from the first table into the second table, note that the selection clause in the insert statement should ignore attributes that are not needed.
+
+        Please don't remove the first table, because we need it for validation.
+
+        Please quote the returned SQL script between "```sql\n" and "\n```". 
+
+        Some explanation for the second table:{source_data_description}
         """
     else:
         raise ValueError(f"Invalid template option {template_option}.")
