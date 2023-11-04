@@ -85,6 +85,7 @@ def main(
                 # accuracy_list.append(case_accuracy)
                 # all_similarity_scores.append(similarity_scores)
                 # print(is_correct)
+
                 differential_score, differential_feedback = differential_quality(gpt_output, conn,
                                                                                  source_data_name_to_find,
                                                                                  target_data_name)
@@ -100,11 +101,11 @@ def main(
                     prompt = initial_prompt + f"The returned SQL script can run, but the execution result of the SQL is wrong. Please try again."+mapping_feedback
                     print(prompt + "\n")
                     continue
-                fd_score,fd_feedback = fd_quality(conn, gpt_output, source_data_name_to_find, target_data_name)
-                if fd_score < threshold:
-                    prompt = initial_prompt + f"The returned SQL script can run, but the execution result of the SQL is wrong. Please try again."+fd_feedback
-                    print(prompt + "\n")
-                    continue
+                #fd_score,fd_feedback = fd_quality(conn, gpt_output, source_data_name_to_find, target_data_name)
+                # if fd_score < threshold:
+                #     prompt = initial_prompt + f"The returned SQL script can run, but the execution result of the SQL is wrong. Please try again."+fd_feedback
+                #     print(prompt + "\n")
+                #     continue
 
                 information_loss = information_case(mapping_feedback,gpt_output,source_data_name_to_find, target_data_name)
                 if information_loss == 0:

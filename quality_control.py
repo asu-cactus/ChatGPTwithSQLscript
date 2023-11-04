@@ -3,11 +3,11 @@ from util import ( execute_sql, print_experiment_settings,
                    calculate_similarity,extract_source_table,generate_information,extract_table_schemas,parse_schema_to_columns)
 from gpt import generate_prompt, chat_with_gpt
 import sqlparse
-from sqlparse.sql import Identifier, Function, IdentifierList,Case, Comparison,TokenList
-from sqlparse.tokens import DML,Token, Operator, Comparison,Keyword
-from datetime import datetime, timedelta
+from sqlparse.sql import Identifier, IdentifierList
+from sqlparse.tokens import DML,Keyword
+from datetime import datetime
 import decimal
-from psycopg2 import sql
+
 
 def reverse_quality(json_file_path, gpt_output, sql_result, source_data_name_to_find, accuracy_list, conn,
                     all_similarity_scores):
@@ -190,38 +190,51 @@ def extract_insert_select_query(sql_query):
 def source_diff(numeric_cols, conn, table_name, num):
     cur = conn.cursor()
 
-    # Extract numeric columns
+    # Determine whether to use the row with the min or max value for numeric columns
+    order_by_col = numeric_cols[0]
+    order_by_direction = "ASC" if num <= 1 else "DESC"
+    cur.execute(f"SELECT * FROM {table_name} ORDER BY \"{order_by_col}\" {order_by_direction} LIMIT 1;")
+    row_to_copy = cur.fetchone()
 
-    # Calculate (num * min_value) for each numeric column
-    adjustments = {}
-    if num <= 1:
-        for col in numeric_cols:
-            if column_exists(conn, table_name, f"\"{col}\""):
-                col_name = f"\"{col}\""
+    # Fetch column names from the table
+    cur.execute(f"SELECT * FROM {table_name} LIMIT 0;")
+    col_names = [desc[0] for desc in cur.description]
+
+    # Prepare the new values, updating only the numeric columns
+    new_values = list(row_to_copy)
+    for i, col in enumerate(col_names):
+        if col in numeric_cols:
+            if num <= 1:
+                cur.execute(f"SELECT MIN(\"{col}\") FROM {table_name};")
             else:
-                col_name = col
-            cur.execute(f"SELECT MIN({col_name}) FROM {table_name};")
-            min_val = cur.fetchone()[0]
-            adjustments[col] = num * min_val if min_val is not None else None
-    else:
-        for col in numeric_cols:
-            if column_exists(conn, table_name, f"\"{col}\""):
-                col_name = f"\"{col}\""
-            else:
-                col_name = col
-            cur.execute(f"SELECT MAX({col_name}) FROM {table_name};")
-            max_val = cur.fetchone()[0]
-            adjustments[col] = num * max_val if max_val is not None else None
+                cur.execute(f"SELECT MAX(\"{col}\") FROM {table_name};")
+            val = cur.fetchone()[0]
+            if val is not None:  # Only multiply if value is not NULL
+                new_values[i] = num * float(val)
 
-    # Construct the INSERT statement to create a new row with these values
-    col_names_str = ', '.join([f"\"{key}\"" for key in adjustments.keys()])
-    values_str = ', '.join(str(val) if val is not None else 'NULL' for val in adjustments.values())
+    # Format values for SQL
+    formatted_values = []
+    for value in new_values:
+        if isinstance(value, datetime):
+            formatted_values.append(f"'{value.strftime('%Y-%m-%d %H:%M:%S')}'")
+        elif isinstance(value, (int, float, decimal.Decimal)):
+            formatted_values.append(str(value))
+        elif value is None:
+            formatted_values.append("NULL")
+        else:
+            formatted_values.append(f"'{value}'")
 
-    # Create a new table with this row
-    new_table_name = f"{table_name}_{num}"
-    cur.execute(f"DROP TABLE IF EXISTS {new_table_name};")
-    cur.execute(f"CREATE TABLE {new_table_name} AS SELECT * FROM {table_name};")
-    cur.execute(f"INSERT INTO {new_table_name} ({col_names_str}) VALUES ({values_str});")
+    # Convert the row into a string format
+    formatted_row = ", ".join(formatted_values)
+
+    # Create a new table name
+    new_table_name = f"{table_name}_{str(num).replace('.', '_')}"
+
+    # Clone the existing table structure with no data
+    cur.execute(f"CREATE TABLE IF NOT EXISTS {new_table_name} AS TABLE {table_name} WITH DATA;")
+
+    # Insert the new row
+    cur.execute(f"INSERT INTO {new_table_name} VALUES ({formatted_row});")
 
     conn.commit()
     cur.close()
@@ -229,11 +242,8 @@ def source_diff(numeric_cols, conn, table_name, num):
     return new_table_name
 
 
-
-
-def query_name_change(sql_query, table_name, param):
+def query_name_change(sql_query,table_name,new_table_name):
     # Adjust the table name to have the "_num" format based on the param
-    new_table_name = f"{table_name}_{param}"
     return sql_query.replace(table_name, new_table_name)
 
 
@@ -302,11 +312,14 @@ def differential_quality(sql_query, conn, table_name, target_table_name):
             # Detect the source_numeric_column automatically
             source_numeric_columns = get_numeric_columns_from_dict(source_columns)
 
-            source_diff(source_numeric_columns, conn, table_name, 0.1)
-
-            sql_query_1 = query_name_change(sql_query, table_name,1)
+            new_table_name = source_diff(source_numeric_columns, conn, table_name, 0.1)
+            print("new_table_name",new_table_name)
+            cur.execute(f"SELECT * FROM {new_table_name};")
+            new_source = cur.fetchall()
+            print("new_source_table:", new_source)
+            sql_query_1 = query_name_change(sql_query, table_name,new_table_name)
             sql_insert = extract_insert_select_query(sql_query_1)
-            print("sql_insert:", sql_insert)
+            #print("sql_insert:", sql_insert)
             execute_sql(conn, sql_insert)
             cur.execute(f"SELECT * FROM {target_table_name};")
             new_target = cur.fetchall()
@@ -319,6 +332,8 @@ def differential_quality(sql_query, conn, table_name, target_table_name):
                     col_name = column
                 cur.execute(f"SELECT \"{col_name}\" FROM {target_table_name};")
                 val_2[column] = cur.fetchone()[0]
+            print("val2.items():", val_2.items())
+            execute_sql(conn,f"DROP TABLE IF EXISTS {new_table_name}")
     except Exception as e:
         conn.rollback()
         print(f"Error in calculating val_2: {e}")
@@ -326,14 +341,14 @@ def differential_quality(sql_query, conn, table_name, target_table_name):
     # val_3
     try:
         with conn.cursor() as cur:
-            source_diff(source_numeric_columns, conn, table_name, 10)
-            new_table_name = f"{table_name}_10"
+            new_table_name = source_diff(source_numeric_columns, conn, table_name, 10)
+            print("new_table_name", new_table_name)
             cur.execute(f"SELECT * FROM {new_table_name};")
             new_source = cur.fetchall()
             print("new_source_table:",new_source)
-            sql_query_2 =query_name_change(sql_query,table_name,2)
+            sql_query_2 =query_name_change(sql_query,table_name,new_table_name)
             sql_insert = extract_insert_select_query(sql_query_2)
-            print("sql_insert:", sql_insert)
+            #print("sql_insert:", sql_insert)
             execute_sql(conn, sql_insert)
             cur.execute(f"SELECT * FROM {target_table_name};")
             new_target = cur.fetchall()
@@ -346,6 +361,7 @@ def differential_quality(sql_query, conn, table_name, target_table_name):
                 cur.execute(f"SELECT \"{col_name}\" FROM {target_table_name};")
                 val_3[column] = cur.fetchone()[0]
             print("val3.items():", val_3.items())
+            execute_sql(conn, f"DROP TABLE IF EXISTS {new_table_name}")
     except Exception as e:
         conn.rollback()
         print(f"Error in calculating val_3: {e}")
