@@ -3,7 +3,7 @@ from util import ( execute_sql, print_experiment_settings,
                    calculate_similarity,extract_source_table,generate_information,extract_table_schemas,parse_schema_to_columns)
 from gpt import generate_prompt, chat_with_gpt
 import sqlparse
-from sqlparse.sql import Identifier, IdentifierList
+from sqlparse.sql import Identifier, IdentifierList,Function
 from sqlparse.tokens import DML,Keyword
 from datetime import datetime
 import decimal
@@ -389,6 +389,7 @@ def extract_source_column_from_token(token, source_columns_clean):
     return extracted_columns
 
 
+
 def extract_elements(sql_query):
     parsed = sqlparse.parse(sql_query)
     elements = {
@@ -435,18 +436,21 @@ def extract_elements(sql_query):
 
     return elements
 
-def calculate_mapping_score(gpt_mapping, column_mappings):
+def calculate_mapping_score_and_mismatches(gpt_mapping, column_mappings):
     correct_mappings = 0
+    mismatches = []
 
     # Check each gpt_mapping against the actual column_mappings
     for gpt_map in gpt_mapping:
         if gpt_map in column_mappings:
             correct_mappings += 1
+        else:
+            mismatches.append(gpt_map)
 
     # Calculate the score based on the number of correct mappings
     total_mappings = len(gpt_mapping)
     score = (correct_mappings / total_mappings) * 100 if total_mappings > 0 else 0
-    return score
+    return score, mismatches
 
 def mapping_quality(gpt_output, source_data_name_to_find, target_data_name):
     source_columns, target_columns = extract_table_schemas(gpt_output, source_data_name_to_find, target_data_name)
@@ -484,11 +488,12 @@ def mapping_quality(gpt_output, source_data_name_to_find, target_data_name):
              ('7:00 PM', '19:00'), ('8:00 PM', '20:00'), ('9:00 PM', '21:00'), ('10:00 PM', '22:00'),
              ('11:00 PM', '23:00'), ('12:00 PM', '24:00')]
 
-    mapping_score = calculate_mapping_score(gpt_mapping, column_mappings)
+    mapping_score,mismatch = calculate_mapping_score_and_mismatches(gpt_mapping, column_mappings)
+    print("mapping score:",mapping_score)
     operator_1 = extract_elements(gpt_output)
     print("column_mapping result:",column_mappings)
     print("Existing operator:",operator_1)
-    return mapping_score,column_mappings
+    return mapping_score,mismatch
 
 
 

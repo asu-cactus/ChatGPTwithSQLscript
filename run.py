@@ -71,7 +71,7 @@ def main(
                                                                    target_data_name, json_file_path)
                     mapping_score, mapping_feedback = mapping_quality(gpt_output, source_data_name_to_find,
                                                                       target_data_name)
-                    prompt = initial_prompt + f"\n Error in the previous response: {sql_result}" + schema_feedback + '\n'.join(mapping_feedback)
+                    prompt = initial_prompt + f"\n Error in the previous response: {sql_result}" + schema_feedback + "\nMapping mismatch is:"+str(mapping_feedback)
                     print(prompt)
                     continue
 
