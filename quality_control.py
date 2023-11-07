@@ -109,23 +109,25 @@ def schema_quality(sql_query, source_data_name_to_find,target_data_name,json_fil
 
     target_data_columns = parse_schema_to_columns(target_data_schema)
     source_data_columns = parse_schema_to_columns(source_data_schema)
-
     print("Parsed Target Schema Columns:", target_data_columns)
     print("Parsed Source Schema Columns:", source_data_columns)
+
     # Clean up column names from the SQL query (removing quotes)
     target_columns_clean = [x.replace('"', '') for x in target_columns]
     select_columns_clean = [x.split(" ")[-1].replace('"', '') if " AS " in x else x for x in
                             select_columns]  # Extract alias if exists
+    print("Target Schema:", target_columns_clean)
+    print("Source Schema:",select_columns_clean)
 
     # Count the number of columns that match in the target and source schema
     matching_target_count = len([col for col in target_columns_clean if col in target_data_columns])
     matching_source_count = len([col for col in select_columns_clean if col in source_data_columns])
-
     print("Matching Target Columns:", matching_target_count)
     print("Matching Source Columns:", matching_source_count)
 
     mismatch_1 = [col for col in target_columns_clean if col not in target_data_columns]
     mismatch_2 = [col for col in select_columns_clean if col not in source_data_columns]
+
     mismatch_feedback = "\n Mismatch in target column:" + str(mismatch_1) + "\n Mismatch in Source column:" + str(mismatch_2)
 
     # Calculate the individual scores
@@ -433,6 +435,18 @@ def extract_elements(sql_query):
 
     return elements
 
+def calculate_mapping_score(gpt_mapping, column_mappings):
+    correct_mappings = 0
+
+    # Check each gpt_mapping against the actual column_mappings
+    for gpt_map in gpt_mapping:
+        if gpt_map in column_mappings:
+            correct_mappings += 1
+
+    # Calculate the score based on the number of correct mappings
+    total_mappings = len(gpt_mapping)
+    score = (correct_mappings / total_mappings) * 100 if total_mappings > 0 else 0
+    return score
 
 def mapping_quality(gpt_output, source_data_name_to_find, target_data_name):
     source_columns, target_columns = extract_table_schemas(gpt_output, source_data_name_to_find, target_data_name)
@@ -451,15 +465,26 @@ def mapping_quality(gpt_output, source_data_name_to_find, target_data_name):
             for token in statement.tokens:
                 if token.ttype is DML and token.value.upper() == "SELECT":
                     select_part = token.parent
-                    for item in select_part.tokens:
-                        if isinstance(item, IdentifierList):
-                            for idx, identifier in enumerate(item.get_identifiers()):
+                    identifiers = [item for item in select_part.tokens if isinstance(item, IdentifierList)]
+                    if identifiers:
+                        identifier_list = identifiers[0].get_identifiers()
+                        for idx, identifier in enumerate(identifier_list):
+                            if idx < len(target_columns_clean):  # Check if idx is within the range
                                 target_col = target_columns_clean[idx]
                                 extracted_columns = extract_source_column_from_token(identifier, source_columns_clean)
                                 for col in extracted_columns:
                                     column_mappings.append((col, target_col))
+                            else:
+                                print(f"Index {idx} is out of range for target columns.")
 
-    mapping_score = 1
+    gpt_mapping = [('Date','CST'),('1:00 AM', '1:00'), ('2:00 AM', '2:00'), ('3:00 AM', '3:00'), ('4:00 AM', '4:00'), ('5:00 AM', '5:00'),
+             ('6:00 AM', '6:00'), ('7:00 AM', '7:00'), ('8:00 AM', '8:00'), ('9:00 AM', '9:00'), ('10:00 AM', '10:00'),
+             ('11:00 AM', '11:00'), ('12:00 AM', '12:00'), ('1:00 PM', '13:00'), ('2:00 PM', '14:00'),
+             ('3:00 PM', '15:00'), ('4:00 PM', '16:00'), ('5:00 PM', '17:00'), ('6:00 PM', '18:00'),
+             ('7:00 PM', '19:00'), ('8:00 PM', '20:00'), ('9:00 PM', '21:00'), ('10:00 PM', '22:00'),
+             ('11:00 PM', '23:00'), ('12:00 PM', '24:00')]
+
+    mapping_score = calculate_mapping_score(gpt_mapping, column_mappings)
     operator_1 = extract_elements(gpt_output)
     print("column_mapping result:",column_mappings)
     print("Existing operator:",operator_1)

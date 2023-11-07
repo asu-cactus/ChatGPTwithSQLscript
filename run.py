@@ -37,7 +37,6 @@ def main(
                 prompt, ground_truth_query, target_data_name = generate_prompt(json_file_path, template_option,0,
                                                                                source_data_name_to_find, oneshot_data_name_to_find)
                 initial_prompt = prompt
-           
 
             # Create a list to store similarity scores of each iteration
             all_similarity_scores = []
@@ -66,9 +65,14 @@ def main(
                 sql_result = execute_sql(conn, gpt_output)
                 print(f"SQL Result: {sql_result}")
                 if "Error:" in sql_result:
-                    prompt = initial_prompt + f"\n Error in the previous response: {sql_result}"
-                    print(prompt)
+
                     accuracy_list.append(0.0)
+                    schema_score, schema_feedback = schema_quality(gpt_output, source_data_name_to_find,
+                                                                   target_data_name, json_file_path)
+                    mapping_score, mapping_feedback = mapping_quality(gpt_output, source_data_name_to_find,
+                                                                      target_data_name)
+                    prompt = initial_prompt + f"\n Error in the previous response: {sql_result}" + schema_feedback + '\n'.join(mapping_feedback)
+                    print(prompt)
                     continue
 
                 # # SQL script returned by ChatGPT is executed correctly
@@ -86,9 +90,9 @@ def main(
                 # all_similarity_scores.append(similarity_scores)
                 # print(is_correct)
 
-                differential_score, differential_feedback = differential_quality(gpt_output, conn,
-                                                                                 source_data_name_to_find,
-                                                                                 target_data_name)
+                # differential_score, differential_feedback = differential_quality(gpt_output, conn,
+                #                                                                  source_data_name_to_find,
+                #                                                                  target_data_name)
                 threshold = 0.9
                 schema_score,schema_feedback = schema_quality(gpt_output, source_data_name_to_find, target_data_name,json_file_path)
                 if schema_score < 1:
@@ -106,34 +110,37 @@ def main(
                 #     prompt = initial_prompt + f"The returned SQL script can run, but the execution result of the SQL is wrong. Please try again."+fd_feedback
                 #     print(prompt + "\n")
                 #     continue
-
-                information_loss = information_case(mapping_feedback,gpt_output,source_data_name_to_find, target_data_name)
-                if information_loss == 0:
-                    reverse_score = reverse_quality(json_file_path, gpt_output, sql_result, source_data_name_to_find,
-                                                    accuracy_list, conn, all_similarity_scores)
-                    if reverse_score > threshold:
-                        log_experiment_success(target_data_name, source_data_name_to_find, iteration_count)
-                        all_similarity_scores = []
-                        break
-                    else:
-                        prompt = initial_prompt + f"The returned SQL script can run, but the execution result of the SQL is wrong. Please try again."
-                        print(prompt + "\n")
-                        continue
-                elif information_loss == 1:
-                    differential_score,differential_feedback = differential_quality(gpt_output, conn, source_data_name_to_find,
-                                                              target_data_name)
-                    if differential_score > threshold:
-                        log_experiment_success(target_data_name, source_data_name_to_find, iteration_count)
-                        all_similarity_scores = []
-                        break
-                    else:
-                        prompt = initial_prompt + f"The returned SQL script can run, but the execution result of the SQL is wrong. Please try again."+differential_feedback
-                        print(prompt + "\n")
-                        continue
-                else:
-                    log_experiment_success(target_data_name, source_data_name_to_find, iteration_count)
-                    all_similarity_scores = []
-                    break
+                log_experiment_success(target_data_name, source_data_name_to_find, iteration_count)
+                all_similarity_scores = []
+                break
+                # information_loss = information_case(mapping_feedback,gpt_output,source_data_name_to_find,
+                #                                     target_data_name)
+                # if information_loss == 0:
+                #     reverse_score = reverse_quality(json_file_path, gpt_output, sql_result, source_data_name_to_find,
+                #                                     accuracy_list, conn, all_similarity_scores)
+                #     if reverse_score > threshold:
+                #         log_experiment_success(target_data_name, source_data_name_to_find, iteration_count)
+                #         all_similarity_scores = []
+                #         break
+                #     else:
+                #         prompt = initial_prompt + f"The returned SQL script can run, but the execution result of the SQL is wrong. Please try again."
+                #         print(prompt + "\n")
+                #         continue
+                # elif information_loss == 1:
+                #     differential_score,differential_feedback = differential_quality(gpt_output, conn, source_data_name_to_find,
+                #                                               target_data_name)
+                #     if differential_score > threshold:
+                #         log_experiment_success(target_data_name, source_data_name_to_find, iteration_count)
+                #         all_similarity_scores = []
+                #         break
+                #     else:
+                #         prompt = initial_prompt + f"The returned SQL script can run, but the execution result of the SQL is wrong. Please try again."+differential_feedback
+                #         print(prompt + "\n")
+                #         continue
+                # else:
+                #     log_experiment_success(target_data_name, source_data_name_to_find, iteration_count)
+                #     all_similarity_scores = []
+                #     break
 
 
 
@@ -145,9 +152,9 @@ def main(
 
 if __name__ == "__main__":
     
-    template_option = 3
+    template_option = 1
     target_id, max_target_id = 1, 3
-    source_id, max_source_id = 8, 8
+    source_id, max_source_id = 3, 8
     print_experiment_settings(template_option, target_id, max_target_id, source_id, max_source_id)
     oneshot_source_id = 0 # Set to 0 to disable oneshot
     main(template_option, target_id, max_target_id, source_id, max_source_id, oneshot_source_id=oneshot_source_id)

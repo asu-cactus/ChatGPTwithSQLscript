@@ -197,9 +197,20 @@ def extract_table_schemas(sql_query,source_data_name_to_find,target_data_name):
 
     return source_schema, target_schema
 
+# def parse_schema_to_columns(data_schema):
+#     if ',' in data_schema:  # For target_data_schema
+#         return [re.split("\s+", x.strip()) for x in data_schema.split(",")]
+#     else:  # For source_data_schema
+#         return [x for x in data_schema.split() if x]
+
 def parse_schema_to_columns(data_schema):
-    if ',' in data_schema:  # For target_data_schema
-        return [re.split("\s+", x.strip())[0] for x in data_schema.split(",")]
-    else:  # For source_data_schema
-        return [x for x in data_schema.split() if x]
+    # Find all matches in the data schema
+    # This regex will match both quoted and unquoted column names while excluding trailing commas
+    matches = re.findall(r'"([^"]+)"\s*,|\s*([^,]+)\s*,', data_schema + ',')
+
+    # Process matches to extract column names
+    # Using filter(None, ...) to remove empty strings from the tuple
+    parsed_columns = [' '.join(filter(None, match)).strip() for match in matches]
+
+    return parsed_columns
 
