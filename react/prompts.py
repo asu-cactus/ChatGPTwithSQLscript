@@ -106,15 +106,17 @@ conditional_template = """
 You are a Postgres SQL developer. Given source_schema: {source_schema} target_schema: {target_schema}, identify any conditions or filters that need to be applied. Execute your analysis step by step. Once complete, provide a concise summary of the conditional dependencies. Wrap the final concise answer between [START] and [END]
 """
 
+finish_template = """
+You are a Postgres SQL developer. Given the prompt: {prompt}, provide the final SQL code for the transformation. Wrap the final SQL code between [START] and [END]
+"""
+
 init_template = """Perform a SQL schema transformation task with interleaved Thought, Action, Observation steps. Given the source and target schemas, provide a transformation strategy and relevant SQL operations. Seek clarity if ambiguity arises. Use the following actions/tools:
 - TypePredict[source_examples, target_examples]: Predict the type of the source and target columns.
 - Mapping[source_schema, target_schema]: Identify mappings between source and target columns.
 - Aggregation[source_schema, target_schema]: Identify which target columns are aggregates of source columns.
 - Clarify[Specific question]: Seek clarity or ask questions when necessary.
 - Conditional[source_schema, target_schema]: Identify any conditions or filters that need to be applied.
-- Finish[answer]: Finish the task by providing the SQL code for the transformation; wrap the SQL code between [START] and [END].
-
-There will also be a MCTS (Monte Carlo Tree Search to help you select the next action.
+- Finish[transformation_sql_code]: Finish the task by providing the transformation SQL code.
 
 Here's an example to guide you: {examples}
 
@@ -122,10 +124,12 @@ Your source_schema is: {source_schema}
 Your target_schema is: {target_schema}
 The source examples are: {source_examples}
 The target examples are: {target_examples}
+
+You must put the final SQL code as transformation_sql_code. You cannot just simply return transformation_sql_code.
+
 Your task is:
 """
 
-ultimate_task = 'Output the SQL code for the transformation. Wrap the SQL code between [START] and [END]'
+ultimate_task = 'Output the SQL code for the transformation.'
 
 actions = ["TypePredict", "DirectMapping", "Aggregation", "Clarify", "Conditional", "Finish"]
-

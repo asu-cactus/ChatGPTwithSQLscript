@@ -30,9 +30,9 @@ class SchemaTransformTools:
             print(f"Error extracting result: {e}")
             return None
 
-    def call_llm(self, model_version, template, include_vars):
+    def call_llm(self, model_version, template, include_vars, additional_vars=None):
         try:
-            final_prompt = self.prompt_constructor(template, include_vars)
+            final_prompt = self.prompt_constructor(template, include_vars, additional_vars)
             if model_version == 'gpt3.5':
                 full_response = llm_models.gpt3(final_prompt)
             else:
@@ -43,7 +43,8 @@ class SchemaTransformTools:
             return None
 
     def type_predict(self) -> str:
-        return self.call_llm('gpt4', type_predict_template, ["source_schema", "target_schema", "source_examples", "target_examples"])
+        return self.call_llm('gpt4', type_predict_template, ["source_schema", "target_schema",
+                                                             "source_examples", "target_examples"])
 
     def column_mapping(self) -> str:
         return self.call_llm('gpt4', column_mapping_template, ["source_schema", "target_schema"])
@@ -58,7 +59,10 @@ class SchemaTransformTools:
     def conditional(self) -> str:
         return self.call_llm('gpt4', conditional_template, ["source_schema", "target_schema"])
 
-    def finish(self, response) -> str:
-        #response = response.replace('\n', '')
-        return self.result_extractor(response)
+    def finish(self, prompt) -> str:
+        additional_vars = {
+            "prompt": prompt
+        }
+        return self.call_llm('gpt4', finish_template, include_vars=[],
+                             additional_vars=additional_vars).replace('\n', ' ')
 

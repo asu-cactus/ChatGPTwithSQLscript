@@ -20,7 +20,7 @@ def gpt4(prompt_, stop=None):
     #if stop is None:
     #    stop = ["\n"]
     response = openai.ChatCompletion.create(
-        model="gpt-4",
+        model="gpt-4-1106-preview",#"gpt-4",
         messages=[{"role": "user", "content": prompt_}],
         temperature=0,
         max_tokens=2000,

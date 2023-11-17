@@ -47,10 +47,10 @@ class Agent:
             # print("TypePredict")
             observation = transformer.type_predict()
             self.performed_actions.add("TypePredict")
-        elif action.strip().startswith("DirectMapping"):
+        elif action.strip().startswith("Mapping"):
             # print("DirectMapping")
             observation = transformer.column_mapping()
-            self.performed_actions.add("DirectMapping")
+            self.performed_actions.add("Mapping")
         elif action.strip().startswith("Aggregation"):
             # print("Aggregation")
             observation = transformer.aggregation()
@@ -66,8 +66,9 @@ class Agent:
             self.performed_actions.add("Conditional")
         elif action.strip().startswith("Finish"):
             # print("Finish")
-            response = action.strip()#[len("Finish["):-1]
-            observation = transformer.finish(response)
+            #response = action[len("Finish["):-1]#action.strip()
+            #print('finish response', response)
+            observation = transformer.finish(self.state)
             finish = True
             self.performed_actions.add("Finish")
         else:
@@ -75,7 +76,7 @@ class Agent:
 
         return observation, finish
 
-    def run(self, to_print=True):
+    def run(self, to_print=True, mcts=False):
         self.state = self.prompt + self.ultimate_task + "\n"
 
         n_calls, n_badcalls = 0, 0
@@ -84,7 +85,7 @@ class Agent:
         for i in range(1, self.max_step + 1):
             n_calls += 1
 
-            if picker[i] == 1:#random.random() < 0.1:
+            if picker[i] == 1 and mcts:#random.random() < 0.1:
                 # Use MCTS for action selection
                 self.react_state = ReactState(self.performed_actions, self.state, self.action_graph, self.transformer, i)
                 bestChild = self.mcts.search(
@@ -100,7 +101,7 @@ class Agent:
                 #observation, finish = self.execute_action(action, transformer=self.transformer)
                 step_str = f"Thought {i}: MCTS - {action}\nAction {i}: {action}\nObservation {i}: {observation}\n"
             else:
-                thought_action = gpt3(self.state + f"Thought {i}:", stop=[f"\nObservation {i}:"])
+                thought_action = gpt4(self.state + f"Thought {i}:", stop=[f"\nObservation {i}:"])
                 try:
                     thought, action = thought_action.strip().split(f"\nAction {i}:")
                 except:
@@ -108,7 +109,7 @@ class Agent:
                     n_badcalls += 1
                     n_calls += 1
                     thought = thought_action.strip().split('\n')[0]
-                    action = gpt3(self.state + f"Thought {i}: {thought}\nAction {i}:", stop=[f"\nObservation {i}:"]).strip()
+                    action = gpt4(self.state + f"Thought {i}: {thought}\nAction {i}:", stop=[f"\nObservation {i}:"]).strip()
 
                 observation, finish = self.execute_action(action, transformer=self.transformer)
                 step_str = f"Thought {i}: {thought}\nAction {i}: {action}\nObservation {i}: {observation}\n"
