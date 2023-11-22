@@ -50,7 +50,8 @@ class SchemaTransformTools:
         return self.call_llm('gpt4', column_mapping_template, ["source_schema", "target_schema"])
 
     def aggregation(self) -> str:
-        return self.call_llm('gpt4', aggregation_template, ["source_schema", "target_schema"])
+        return self.call_llm('gpt4', aggregation_template, ["source_schema", "target_schema",
+                                                            "source_examples", "target_examples"])
 
     def clarify(self, question) -> str:
         result = input(question)

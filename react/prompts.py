@@ -91,19 +91,19 @@ GROUP BY DT_STRATA, DOW
 """
 
 type_predict_template = """
-You are a Postgres SQL developer. Given source_schema: {source_schema} target_schema: {target_schema}, source examples {source_examples}, and target examples {target_examples}, predict the type of the target columns. Execute your analysis step by step. Once complete, provide a concise summary of the type predictions. Wrap the final concise answer between [START] and [END]
+You are a Postgres SQL developer. Given source_schema: {source_schema}, target_schema: {target_schema}, source examples {source_examples}, and target examples {target_examples}, predict the type of the target columns and source columns. Execute your analysis step by step. Once complete, provide a concise summary of the type predictions. Wrap the final concise answer between [START] and [END]
 """
 
 column_mapping_template = """
-You are a Postgres SQL developer. Given source_schema: {source_schema} target_schema: {target_schema}, identify mappings. Execute your analysis step by step. Once complete, provide a concise summary of the mappings. Wrap the final concise answer between [START] and [END]
+You are a Postgres SQL developer. Given source_schema: {source_schema}, target_schema: {target_schema}, identify mappings. Execute your analysis step by step. Once complete, provide a concise summary of the mappings. Wrap the final concise answer between [START] and [END]
 """
 
 aggregation_template = """
-You are a Postgres SQL developer. Given source_schema: {source_schema} target_schema: {target_schema}, identify which target columns are aggregates of source columns. Execute your analysis step by step. Once complete, provide a concise summary of the aggregations, if there is any. Wrap the final concise answer between [START] and [END]
+You are a Postgres SQL developer. Given source_schema: {source_schema}, target_schema: {target_schema}, source examples {source_examples}, and target examples {target_examples}, identify which target columns are aggregates of source columns. Execute your analysis step by step. Once complete, provide a concise summary of the aggregations, if there is any. Wrap the final concise answer between [START] and [END]
 """
 
 conditional_template = """
-You are a Postgres SQL developer. Given source_schema: {source_schema} target_schema: {target_schema}, identify any conditions or filters that need to be applied. Execute your analysis step by step. Once complete, provide a concise summary of the conditional dependencies. Wrap the final concise answer between [START] and [END]
+You are a Postgres SQL developer. Given source_schema: {source_schema}, target_schema: {target_schema}, identify any conditions or filters that need to be applied. Execute your analysis step by step. Once complete, provide a concise summary of the conditional dependencies. Wrap the final concise answer between [START] and [END]
 """
 
 finish_template = """
