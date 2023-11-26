@@ -1,20 +1,44 @@
 import openai
 import json
-from config import OPENAI_API_KEY
+import time
+import logging
+#from config import OPENAI_API_KEY
 
-openai.api_key = OPENAI_API_KEY
+openai.api_key = 'sk-'
 
 
-def chat_with_gpt(prompt):
+def chat_with_gpt(prompt,max_tokens=4096):
     """ Interact with chatGPT model and extract SQL script from the response. """
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-16k",
+        model="gpt-4-1106-preview",
         messages=[{"role": "user", "content": prompt}],
         temperature=0,
-        max_tokens=10000,
+        max_tokens=max_tokens,
     )
     complete_response = response.choices[0]['message']['content']
     return ''.join(complete_response.split("```sql")[1].split("```")[0].strip())
+
+def gpt4_sql_script(prompt, total_tokens, max_tokens_per_request=4096):
+    start_time = time.time()
+    timeout = 30
+    sql_script = ""
+    while len(sql_script.split()) < total_tokens:
+        remaining_tokens = total_tokens - len(sql_script.split())
+        tokens_to_generate = min(remaining_tokens, max_tokens_per_request)
+
+        partial_script = chat_with_gpt(prompt, max_tokens=tokens_to_generate)
+        sql_script += partial_script
+
+        # Update the prompt for the next iteration
+        prompt += partial_script
+
+        if time.time() - start_time > timeout:
+            logging.info(f"Timeout reached. Current script length:, {len(sql_script.split())}")
+            logging.info(f"GPT-4 SQL PROMPT: {prompt}")
+            logging.info(f"Final gpt4 sql script : {sql_script}")
+            break
+    return sql_script
+
 
 def generate_prompt(json_file_path, template_option, source_data_name_to_find, oneshot_data_name_to_find=None):
     # Read the JSON file
