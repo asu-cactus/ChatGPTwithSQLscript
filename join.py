@@ -57,7 +57,9 @@ def convert_excel_to_json(excel_file_path, json_file_path):
 def validation(sql_result, ground_truth, tolerance=1e-10):
     validation_error = ""
 
-    if len(sql_result) != len(ground_truth) or len(sql_result[0]) != len(ground_truth[0]):
+    if len(sql_result) != len(ground_truth):
+        return 0.0, False, ['first length'], validation_error
+    elif len(sql_result) != len(ground_truth) or len(sql_result.columns) != len(ground_truth.columns):
         validation_error = "Different number of rows or columns in the results and ground truth."
         return 0.0, False, ["missmatch"], validation_error
 
@@ -67,27 +69,18 @@ def validation(sql_result, ground_truth, tolerance=1e-10):
 
     res = True
     # Iterate through columns and compare
-    for col_index in range(len(sql_result[0])):
-        sql_column = [str(row[col_index]) if row[col_index] is not None else '0.0' for row in sql_result]
-        truth_column = [str(row[col_index]) if row[col_index] is not None else '0.0' for row in ground_truth]
+    for col_index in range(len(sql_result.columns)):
+        sql_column = sql_result.iloc[:, col_index].apply(lambda x: str(x) if pd.notna(x) else '0.0').tolist()
+        truth_column = ground_truth.iloc[:, col_index].apply(lambda x: str(x) if pd.notna(x) else '0.0').tolist()
 
         # Determine whether columns can be treated as numerical
-        is_sql_numeric = True
-        is_truth_numeric = True
-
-        try:
-            float(sql_column[0])  # Try converting the first value
-        except (ValueError, TypeError):
-            is_sql_numeric = False
-
-        try:
-            float(truth_column[0])
-        except (ValueError, TypeError):
-            is_truth_numeric = False
+        is_sql_numeric = sql_result.iloc[:, col_index].apply(lambda x: isinstance(x, (int, float))).all()
+        is_truth_numeric = ground_truth.iloc[:, col_index].apply(lambda x: isinstance(x, (int, float))).all()
 
         if is_sql_numeric and is_truth_numeric:
             similarity_type = "numerical"
         else:
+            # [for x in [is_sql_numeric, is_truth_numeric] ]
             similarity_type = "jaccard"
 
         similarity_score = calculate_similarity(sql_column, truth_column, similarity_type=similarity_type,
@@ -102,7 +95,7 @@ def validation(sql_result, ground_truth, tolerance=1e-10):
         # Append the similarity score for this column
         similarity_scores.append(similarity_score)
 
-    case_accuracy = fully_matched_columns_num / len(sql_result[0])
+    case_accuracy = fully_matched_columns_num / len(sql_result.columns)
     print("Similarity scores for this iteration:", similarity_scores)
 
     # Returning both the result of strict validation, the similarity scores, and the global accuracy
