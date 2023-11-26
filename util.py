@@ -3,6 +3,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 import psycopg2
 import csv
 import re
+import logging
 
 def read_csv_file(file_path):
     with open(file_path, 'r') as file:
@@ -16,20 +17,26 @@ def create_connection():
     conn = psycopg2.connect(
         dbname="postgres",
         user="postgres",
-        password="postgres",
+        password="1234",
         host="localhost",  # e.g., "localhost"
         port="5432"  # e.g., "5432"
     )
     return conn
 
-def extract_last_insert_table_name(query):
-    """
-    Extracts the table name from the last INSERT INTO clause in the given SQL query.
-    """
-    matches = re.findall(r"INSERT\s+INTO\s+(\w+)", query, re.IGNORECASE)
-    if matches:
-        return matches[-1]
-    return None
+def extract_target_table_name(sql_query):
+    # Match the target table name after the third "CREATE TABLE" statement
+    create_matches = re.findall(r'CREATE\s+TABLE\s+(\w+)', sql_query, re.IGNORECASE)
+
+    if len(create_matches) >= 3:
+        return create_matches[2]  # Return the third occurrence of CREATE TABLE
+
+    # Match the target table name after the "INSERT INTO" statement
+    insert_match = re.search(r'INSERT\s+INTO\s+(\w+)', sql_query, re.IGNORECASE)
+
+    if insert_match:
+        return insert_match.group(1)  # Return the captured group (table name) after INSERT INTO
+
+    return None  # Return None if no match is found
 
 
 def execute_sql(conn, query):
@@ -42,13 +49,16 @@ def execute_sql(conn, query):
 
         # Check if the operation is not a SELECT statement
         if not query.strip().upper().startswith("SELECT"):
-            target_table = extract_last_insert_table_name(query)
+            target_table = extract_target_table_name(query)
             if target_table:
                 # Fetch results from the last inserted table
+                logging.info(f"final name of target table {target_table}")
                 cursor.execute(f"SELECT * FROM {target_table};")
                 result = cursor.fetchall()
+                #logging.info(f"good target table result {result}")
             else:
                 result = "Table name not identified from last INSERT INTO query."
+                logging.info(f"bad target table result {result}")
         else:
             result = cursor.fetchall()
 
@@ -110,12 +120,16 @@ def log_experiment_success(target_data_name, source_data_name_to_find, iteration
         # Append the global accuracy to the end
         # file.write(f", Global accuracy: {case_accuracy:.2f}\n")
 
-
 def numerical_similarity(value1, value2, threshold=1e-10):
     """ Calculate numerical similarity between two values. """
     if value1 in (0.0, None) and value2 in (0.0, None):
         return 1.0
-    return 1.0 if abs(float(value1) - float(value2)) <= threshold else 0.0
+    try:
+        float_value1 = float(set(value1))
+        float_value2 = float(set(value2))
+        return 1.0 if abs(float_value1 - float_value2) <= threshold else 0.0
+    except (ValueError, TypeError):
+        return 0.0
 
 
 def calculate_similarity(column_a, column_b, similarity_type="numerical", threshold=1e-10):
