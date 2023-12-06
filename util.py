@@ -4,6 +4,7 @@ import psycopg2
 import csv
 import re
 import logging
+import json
 
 def read_csv_file(file_path):
     with open(file_path, 'r') as file:
@@ -17,7 +18,7 @@ def create_connection():
     conn = psycopg2.connect(
         dbname="postgres",
         user="postgres",
-        password="1234",
+        password="021111",
         host="localhost",  # e.g., "localhost"
         port="5432"  # e.g., "5432"
     )
@@ -144,5 +145,121 @@ def calculate_similarity(column_a, column_b, similarity_type="numerical", thresh
     else: # Not used in the current version
         vectorizer = CountVectorizer().fit_transform(column_a + column_b)
         return cosine_similarity(vectorizer[:len(column_a)], vectorizer[len(column_a):])[0, 0]
+
+def extract_source_table(source_data_name_to_find):
+    sql_query = f"""select * from {source_data_name_to_find}"""
+
+    return sql_query
+
+def generate_information(json_file_path, source_data_name_to_find):
+    # Read the JSON file
+    with open(json_file_path, 'r') as file:
+        data_list = json.load(file)
+
+    # Find the item with the specified Source Data Name
+    data = None
+    for item in data_list:
+        if item["Source Data Name"] == source_data_name_to_find:
+            data = item
+            break
+    if data is None:
+        return f"No data found for Source Data Name: {source_data_name_to_find}"
+
+    # Extract the relevant information from the JSON data
+    target_data_name = data["Target Data Name"]
+    target_data_schema = data["Target Data Schema"]
+    source_data_name = data["Source Data Name"]
+    source_data_schema = data["Source Data Schema"]
+    samples = data["5 Samples of Source Data"]
+    target_data_description = data["Target Data Description"]
+    source_data_description = data["Source Data Description"]
+    schema_change_hints = data["Schema Change Hints"]
+
+    return target_data_schema,source_data_schema,samples
+
+def extract_table_schemas(sql_query,source_data_name_to_find,target_data_name):
+    source_schema = {}
+    target_schema = {}
+
+    # Remove lines that are comments
+    sql_query = '\n'.join([line for line in sql_query.split('\n') if not line.strip().startswith('--')]).strip()
+
+    # Split SQL queries based on semicolon and filter out empty strings
+    queries = [q.strip() for q in sql_query.split(";") if q.strip()]
+
+    for query in queries:
+        # Match CREATE TABLE statements
+        match = re.match(r"CREATE TABLE (\w+) \((.+)\)", query.replace('\n', ' '), re.IGNORECASE)
+
+        if match:
+            table_name = match.group(1)
+            columns_str = match.group(2)
+            # This regular expression ensures that columns with spaces are captured correctly
+            columns_list = re.findall(r'(?:(\w+)|"([^"]+)")\s+([\w()]+)', columns_str)
+
+            # Extract column names and types
+            column_schema = {}
+            for col in columns_list:
+                col_name = col[1] if col[1] else col[0]
+                col_type = col[2].upper()
+                column_schema[col_name] = col_type
+
+            if table_name == source_data_name_to_find:
+                source_schema = column_schema
+            elif table_name == target_data_name:
+                target_schema = column_schema
+
+    return source_schema, target_schema
+
+# def parse_schema_to_columns(data_schema):
+#     if ',' in data_schema:  # For target_data_schema
+#         return [re.split("\s+", x.strip()) for x in data_schema.split(",")]
+#     else:  # For source_data_schema
+#         return [x for x in data_schema.split() if x]
+
+def parse_schema_to_columns(data_schema):
+    # This regex will match both quoted and unquoted column names
+    # It captures everything inside the quotes for quoted column names
+    # and everything up to the first space (or end of string if no space) for unquoted column names
+    matches = re.findall(r'"([^"]+)"\s*[^,]*,|\s*([^,\s]+)\s[^,]*,', data_schema + ',')
+
+    # Process matches to extract column names
+    parsed_columns = [' '.join(filter(None, match)).strip() for match in matches]
+
+    return parsed_columns
+
+
+def extract_agg_mapping_operator(gpt_output):
+    # Regular expression for extracting mappings
+    mapping_regex = r'Mapping\[(.+?),\s*(".*?"|\w+)\]'
+    mapping_matches = re.findall(mapping_regex, gpt_output)
+
+    # Regular expression for extracting aggregation functions
+    agg_regex = r'Aggregation\[(.+?),\s*(".+?"|\w+),\s*(\w+)\]'
+    agg_matches = re.findall(agg_regex, gpt_output)
+
+    # Regular expression for extracting operators
+    operator_regex = r'Existing operator: \((.+)\)'
+    operator_matches = re.search(operator_regex, gpt_output)
+
+    # Extracted mappings
+    mappings = []
+    for match in mapping_matches:
+        source, target = match
+        mappings.append((source.strip(), target.strip().replace('"', '')))  # Remove quotes from target
+
+    # Extracted aggregation, if any
+    aggs = []
+    for match in agg_matches:
+        column, agg_type = match[:2]
+        aggs.append((column.strip(), agg_type.strip().replace('"', '')))
+
+    # Extracted operators
+    operators = set()
+    if operator_matches:
+        # Split the matched string by comma and strip spaces and quotes
+        operators = set(op.strip().strip("'") for op in operator_matches.group(1).split(','))
+
+    return aggs, mappings, operators
 
 

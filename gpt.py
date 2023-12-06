@@ -4,10 +4,10 @@ import time
 import logging
 #from config import OPENAI_API_KEY
 
-openai.api_key = 'sk-'
+openai.api_key = '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'
 
 
-def chat_with_gpt(prompt,max_tokens=4096):
+def chat_with_gpt(prompt,ifsql=True,max_tokens=4096):
     """ Interact with chatGPT model and extract SQL script from the response. """
     response = openai.ChatCompletion.create(
         model="gpt-4-1106-preview",
@@ -16,7 +16,10 @@ def chat_with_gpt(prompt,max_tokens=4096):
         max_tokens=max_tokens,
     )
     complete_response = response.choices[0]['message']['content']
-    return ''.join(complete_response.split("```sql")[1].split("```")[0].strip())
+    if ifsql:
+        return ''.join(complete_response.split("```sql")[1].split("```")[0].strip())
+    else:
+        return complete_response
 
 def gpt4_sql_script(prompt, total_tokens, max_tokens_per_request=4096):
     start_time = time.time()
@@ -40,7 +43,7 @@ def gpt4_sql_script(prompt, total_tokens, max_tokens_per_request=4096):
     return sql_script
 
 
-def generate_prompt(json_file_path, template_option, source_data_name_to_find, oneshot_data_name_to_find=None):
+def generate_prompt(json_file_path, template_option,output_table,output_sql,source_data_name_to_find, oneshot_data_name_to_find=None):
     # Read the JSON file
     with open(json_file_path, 'r') as file:
         data_list = json.load(file)
@@ -282,9 +285,39 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find, o
         Please don't remove the {source_data_name} table, because we need it for validation.
         Please quote the returned SQL script to perform these tasks between "```sql\n and "\n```".
         """
+    elif template_option == 8:
+        prompt = f"""
+                You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {target_data_name} with only the given attributes: {target_data_schema}. Please delete the table before creating it if the first table exists. 
+
+                Second, insert the following row(s) into the first table:
+
+                {output_table}
+
+                Third, you must create a second table named {source_data_name} with only the given attributes: {source_data_schema}. Please delete the table before creating it if the first table exists.
+
+                Finally, insert all rows from the first table into the second table, note that the selection clause in the insert statement should ignore attributes that are not needed.
+
+                Please don't remove the first table, because we need it for validation.
+
+                Please quote the returned SQL script between "```sql\n" and "\n```". 
+
+                Some explanation for the second table:{source_data_description}
+                
+                If you think this transformation is impossible to achieve,please still generate a SQL code that can be executed.
+                """
+    elif template_option == 9:
+        prompt = f"""
+        SQL code:{output_sql}
+        Result Table"{output_table}
+        Please based on the SQL code and the result table I provided with to preform tasks below:
+        1.Find the mapping(s) between the source and target schemas.The return value should be:Mapping[source_schema, target_schema].You don't need to add the Source table name and Target table name.Please quote the returned result between "```Mapping\n" and "\n```".
+        2.Identify which target columns are aggregates of source columns and also the aggregation type(min,max,sum,avg).The return value should be:Aggregation[source_schema, target_schema].You don't need to add the Source table name and Target table name.Please quote the returned result between "```Agg\n" and "\n```".If there are no aggregations,please return None.
+        3.Detect the operator used in the SQL script like this:Existing operator: {'group_by', 'to_char', 'max', 'min', 'sum', 'avg', 'case_statements', 'extract', 'greatest', 'least'}.Please quote the returned result between "```Operator\n" and "\n```".
+
+        """
     else:
         raise ValueError(f"Invalid template option {template_option}.")
     print(prompt)
-    print(f"Ground Truth SQL Query: {ground_truth}")
+    #print(f"Ground Truth SQL Query: {ground_truth}")
 
     return prompt, ground_truth, target_data_name

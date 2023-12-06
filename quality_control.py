@@ -1,3 +1,5 @@
+import re
+
 from util import ( execute_sql, print_experiment_settings,
                    log_experiment_success, log_experiment_failed,
                    calculate_similarity,extract_source_table,generate_information,extract_table_schemas,parse_schema_to_columns)
@@ -9,13 +11,13 @@ from datetime import datetime
 import decimal
 
 
-def reverse_quality(json_file_path, gpt_output, sql_result, source_data_name_to_find, accuracy_list, conn,
+def reverse_quality(json_file_path, sql_result,gpt_output, source_data_name_to_find, accuracy_list, conn,
                     all_similarity_scores):
 
-    prompt, gt, td = generate_prompt(json_file_path, 8, gpt_output, source_data_name_to_find)
-    print("prompt:", prompt)
+    prompt, gt, td = generate_prompt(json_file_path, 8, sql_result,gpt_output, source_data_name_to_find)
+    #print("prompt:", prompt)
 
-    gpt_output = chat_with_gpt(prompt,True)
+    gpt_output = chat_with_gpt(prompt)
     gpt_output_source = extract_source_table(source_data_name_to_find)
     print("gpt_output:", gpt_output)
     print("gpt_output_source:", gpt_output_source)
@@ -43,7 +45,7 @@ def validation(sql_result, ground_truth, tolerance=1e-10):
 
     if len(sql_result) != len(ground_truth) or len(sql_result[0]) != len(ground_truth[0]):
         validation_error = "Different number of rows or columns in the results and ground truth."
-        return 0.0, False, ["mismatch"], validation_error
+        return 0.0, False, ["mismatch"], validation_error,0.0
 
     # Initialize a list to store similarity scores
     similarity_scores = []
@@ -88,9 +90,9 @@ def validation(sql_result, ground_truth, tolerance=1e-10):
 
     case_accuracy = fully_matched_columns_num / len(sql_result[0])
     print("Similarity scores for this iteration:", similarity_scores)
-
+    reverse_score = case_accuracy
     # Returning both the result of strict validation, the similarity scores, and the global accuracy
-    return case_accuracy, res, similarity_scores, validation_error
+    return case_accuracy, res, similarity_scores, validation_error,reverse_score
 
 def schema_quality(sql_query, source_data_name_to_find,target_data_name,json_file_path):
     """
@@ -128,7 +130,14 @@ def schema_quality(sql_query, source_data_name_to_find,target_data_name,json_fil
     mismatch_1 = [col for col in target_columns_clean if col not in target_data_columns]
     mismatch_2 = [col for col in select_columns_clean if col not in source_data_columns]
 
-    mismatch_feedback = "\n Mismatch in target column:" + str(mismatch_1) + "\n Mismatch in Source column:" + str(mismatch_2)
+    if not mismatch_1 and not mismatch_2:
+        mismatch_feedback = "Schema matches correctly."
+    else:
+        mismatch_feedback = ""
+        if mismatch_1:
+            mismatch_feedback += "\n Mismatch in target column: " + str(mismatch_1)
+        if mismatch_2:
+            mismatch_feedback += "\n Mismatch in Source column: " + str(mismatch_2)
 
     # Calculate the individual scores
     score_3_2 = matching_target_count / len(target_data_columns) if len(target_data_columns) != 0 else 0
@@ -139,8 +148,8 @@ def schema_quality(sql_query, source_data_name_to_find,target_data_name,json_fil
     print("score_3_1",score_3_1)
     print("score_3_2",score_3_2)
     # Weights for each score
-    weight_1 = 0.4
-    weight_2 = 0.6
+    weight_1 = 0.5
+    weight_2 = 0.5
 
     # Calculate the final quality score
     quality_score = (weight_1 * score_3_1) + (weight_2 * score_3_2)
@@ -251,7 +260,7 @@ def query_name_change(sql_query,table_name,new_table_name):
 
 def determine_aggregation(val_1, val_2, val_3, val_01, val_10):
     aggregation_type = None
-
+    detected_aggregations = []
     # Find the columns affected for val_2 and val_3
     affected_columns_1 = [col for col, (val_before, val_after) in zip(val_1.keys(), zip(val_1.values(), val_2.values())) if val_before != val_after]
     affected_columns_2 = [col for col, (val_before, val_after) in zip(val_1.keys(), zip(val_1.values(), val_3.values())) if val_before != val_after]
@@ -271,11 +280,24 @@ def determine_aggregation(val_1, val_2, val_3, val_01, val_10):
     # Check for avg aggregation
     elif all(val_2[col] < val_1[col] for col in affected_columns_1) and all(val_3[col] > val_1[col] for col in affected_columns_2):
         aggregation_type = "avg"
+    if affected_columns_1 == affected_columns_2:
+        detected_aggregations.append((aggregation_type,affected_columns_1))
+    else:
+        detected_aggregations.append((aggregation_type, affected_columns_1))
+        detected_aggregations.append((aggregation_type,affected_columns_2))
+    return detected_aggregations
 
-    return aggregation_type
+def parse_expected_aggregations(expected_aggregations):
+    parsed_aggregations = []
+    for agg in expected_aggregations:
+        # Updated regex to match "Aggregation[column1, column2, aggregation_type]"
+        match = re.match(r"Aggregation\[(.*?),\s*\"(.*?)\",\s*(.*?)\]", agg)
+        if match:
+            column1, column2, aggregation_type = match.groups()
+            parsed_aggregations.append((aggregation_type.strip(), column1.strip(), column2.strip()))
+    return parsed_aggregations
 
-
-def differential_quality(sql_query, conn, table_name, target_table_name):
+def differential_quality(sql_query, conn, table_name, target_table_name,expected_aggregations_str):
     cur = conn.cursor()
     print("differential:")
     source_columns, target_columns = extract_table_schemas(sql_query, table_name, target_table_name)
@@ -368,11 +390,25 @@ def differential_quality(sql_query, conn, table_name, target_table_name):
         conn.rollback()
         print(f"Error in calculating val_3: {e}")
 
-    # Compare val_1,val_2,_val_3
-    aggregation_detected = determine_aggregation(val_1, val_2, val_3, val_01, val_10)
-    print(f"Detected aggregation: {aggregation_detected}")
-    cur.close()
-    return 1,aggregation_detected
+    detected_aggregations = determine_aggregation(val_1, val_2, val_3, val_01, val_10)
+    print("detected_aggregations:",detected_aggregations)
+    mismatch_info = []
+    correct_matches = 0
+    expected_aggregations = parse_expected_aggregations(expected_aggregations_str)
+    print("expected_aggregations",expected_aggregations)
+    for expected_agg, expected_col in expected_aggregations:
+        if any(agg == expected_agg and col == expected_col for agg, col in detected_aggregations):
+            correct_matches += 1
+        else:
+            mismatch_info.append(f"Expected aggregation {expected_agg} on column {expected_col} not found.")
+
+    total_possible_matches = len(expected_aggregations)
+    comparison_score = correct_matches / total_possible_matches if total_possible_matches > 0 else 0
+
+    mismatch_message = "\n".join(mismatch_info) if mismatch_info else "All aggregations matched correctly."
+    print("DF score:",comparison_score)
+    return comparison_score, mismatch_message
+
 
 
 def fd_quality(conn,gpt_output, source_data_name_to_find, target_data_name):
@@ -449,10 +485,44 @@ def calculate_mapping_score_and_mismatches(gpt_mapping, column_mappings):
 
     # Calculate the score based on the number of correct mappings
     total_mappings = len(gpt_mapping)
-    score = (correct_mappings / total_mappings) * 100 if total_mappings > 0 else 0
+    score = (correct_mappings / total_mappings) if total_mappings > 0 else 0
     return score, mismatches
 
-def mapping_quality(gpt_output, source_data_name_to_find, target_data_name):
+
+def parse_operator(operators):
+    parsed_operators = set()
+
+    for operator, values in operators.items():
+        if values:  # Check if the list of values for this operator is not empty
+            parsed_operators.add(operator)
+
+    return parsed_operators
+
+
+def calculate_operator_score_and_mismatches(expected_operator, parsed_operator):
+    expected_operator_set = set(expected_operator)
+    parsed_operator_set = set(parsed_operator)
+
+    correct_matches = len(expected_operator_set & parsed_operator_set)
+    total_possible_matches = len(expected_operator_set)
+    score = correct_matches / total_possible_matches if total_possible_matches > 0 else 0
+
+    missing_operators = expected_operator_set - parsed_operator_set
+    unexpected_operators = parsed_operator_set - expected_operator_set
+    mismatch_message = ""
+
+    if missing_operators:
+        mismatch_message += "Missing expected operators: " + ", ".join(missing_operators) + ". "
+    if unexpected_operators:
+        mismatch_message += "Unexpected operators found: " + ", ".join(unexpected_operators) + ". "
+
+    if not mismatch_message:
+        mismatch_message = "All operators matched correctly."
+
+    return score, mismatch_message
+
+
+def mapping_quality(gpt_output, source_data_name_to_find, target_data_name,expected_mapping,expected_operator):
     source_columns, target_columns = extract_table_schemas(gpt_output, source_data_name_to_find, target_data_name)
     # Clean up column names from the SQL query (removing quotes)
     target_columns_clean = [x.replace('"', '') for x in target_columns]
@@ -481,19 +551,19 @@ def mapping_quality(gpt_output, source_data_name_to_find, target_data_name):
                             else:
                                 print(f"Index {idx} is out of range for target columns.")
 
-    gpt_mapping = [('Date','CST'),('1:00 AM', '1:00'), ('2:00 AM', '2:00'), ('3:00 AM', '3:00'), ('4:00 AM', '4:00'), ('5:00 AM', '5:00'),
-             ('6:00 AM', '6:00'), ('7:00 AM', '7:00'), ('8:00 AM', '8:00'), ('9:00 AM', '9:00'), ('10:00 AM', '10:00'),
-             ('11:00 AM', '11:00'), ('12:00 AM', '12:00'), ('1:00 PM', '13:00'), ('2:00 PM', '14:00'),
-             ('3:00 PM', '15:00'), ('4:00 PM', '16:00'), ('5:00 PM', '17:00'), ('6:00 PM', '18:00'),
-             ('7:00 PM', '19:00'), ('8:00 PM', '20:00'), ('9:00 PM', '21:00'), ('10:00 PM', '22:00'),
-             ('11:00 PM', '23:00'), ('12:00 PM', '24:00')]
+    gpt_mapping = expected_mapping
 
-    mapping_score,mismatch = calculate_mapping_score_and_mismatches(gpt_mapping, column_mappings)
-    print("mapping score:",mapping_score)
-    operator_1 = extract_elements(gpt_output)
+    mapping_score_1,mismatch_1 = calculate_mapping_score_and_mismatches(gpt_mapping, column_mappings)
+    print("mapping score_1:",mapping_score_1)
+    operator = extract_elements(gpt_output)
     print("column_mapping result:",column_mappings)
-    print("Existing operator:",operator_1)
-    return mapping_score,mismatch
+    print("Existing operator:",operator)
+    parsed_operator = parse_operator(operator)
+    print("Parsed operator:",parsed_operator)
+    mapping_score_2, mismatch_2 = calculate_operator_score_and_mismatches(expected_operator, parsed_operator)
+    print("mapping score_2:",mapping_score_2)
+    mapping_score = (mapping_score_1+mapping_score_2)/2
+    return mapping_score,mismatch_1, mismatch_2
 
 
 
