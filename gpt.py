@@ -4,7 +4,7 @@ import time
 import logging
 #from config import OPENAI_API_KEY
 
-openai.api_key = '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'
+openai.api_key = ''
 
 
 def chat_with_gpt(prompt,ifsql=True,max_tokens=4096):
