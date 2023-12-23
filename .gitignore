@@ -1,4 +1,12 @@
 *.log
 config.py
-
+*.ipynb
+react/github-pipelines/
 __pycache__/
+/.idea/ChatGPTwithSQLscript.iml
+/.idea/dataSources.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/vcs.xml
+/.idea/.gitignore

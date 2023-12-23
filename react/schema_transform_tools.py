@@ -1,5 +1,5 @@
 from typing import Any, Dict
-from langchain import PromptTemplate
+from langchain.prompts import PromptTemplate
 from prompts import *
 import llm_models
 
@@ -64,6 +64,9 @@ class SchemaTransformTools:
         additional_vars = {
             "prompt": prompt
         }
-        return self.call_llm('gpt4', finish_template, include_vars=[],
-                             additional_vars=additional_vars).replace('\n', ' ')
+        result = self.call_llm('gpt4', finish_template, include_vars=[],
+                             additional_vars=additional_vars)#.replace('\n', ' ') # this will corrupt the SQL comments
 
+        if '```sql' in result:
+            result = result.split('```sql')[1].split('```')[0]
+        return result

@@ -28,7 +28,7 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find, o
             data = item
             break
     if data is None:
-        raise ValueError(f"No data found for Source Data Name: {source_data_name_to_find}") 
+        raise ValueError(f"No data found for Source Data Name: {source_data_name_to_find}")
 
     # Extract the relevant information from the JSON data
     target_data_name = data["Target Data Name"]
@@ -40,7 +40,7 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find, o
     source_data_description = data["Source Data Description"]
     schema_change_hints = data["Schema Change Hints"]
     ground_truth = data["Ground Truth SQL"]
-    
+
     # Find the item with the specified Oneshot Source Data Name
     if oneshot_data_name_to_find:
         if template_option < 5:
@@ -81,7 +81,7 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find, o
         Please quote the returned SQL script between "```sql\n" and "\n```". 
 
         {target_data_description}"""
-        
+
     elif template_option == 2:
         prompt = f"""You are a SQL developer. Please generate a Postgres sql script to convert the first table to be consistent with the format of the second table. First, you must create the first table named {source_data_name} with only the given attributes: {source_data_schema}. Please delete the table before creating it if the first table exists. 
 
@@ -130,7 +130,7 @@ def generate_prompt(json_file_path, template_option, source_data_name_to_find, o
         Their primary focus is ensuring that time-related operations, especially those dealing with TIMESTAMP data types, are accurate and efficient.
         Let's perform some tasks:
         1. Creating the {source_data_name} Table:
-        - Check if a table named {source_data_name} exists. If it does, delete it.
+        - Check if a table named {source_头痛data_name} exists. If it does, delete it.
         - Create a new table named {source_data_name}. This table should have exact attributes from the following 
         schema: {source_data_schema}.
         - Note:{source_data_description}

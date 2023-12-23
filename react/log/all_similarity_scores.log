@@ -1,0 +1,472 @@
+Starting with template1 ...
+Scope: target in [1, 99], source is 0
+Target1_0 <- ['Source1_0_0'] with iter-1		[Success]
+Target1_3 <- ['Source1_3_0'] with iter-1		[Success]
+Target1_4 <- ['Source1_4_0'] with iter-1		[Success]
+Target1_6 <- ['Source1_6_0'] with iter-1		[Success]
+Target1_6 <- ['Source1_6_0']				[Failed]
+	Please check the similarity scores:
+				Case accuracy: 1.00
+Starting with template1 ...
+Scope: target in [9, 99], source is 0
+Target1_9 <- ['Source1_9_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_10 <- ['Source1_10_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: 1.0, 0.9982142857142857, 1.0, 1.0, 1.0, 1.0
+				Case accuracy: 1.00
+Target1_11 <- ['Source1_11_0'] with iter-1		[Success]
+Target1_13 <- ['Source1_13_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Starting with template1 ...
+Scope: target in [14, 99], source is 0
+[Clarify Off]
+Scope: length is 1, target in [14, 99]
+Target1_18 <- ['Source1_18_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [14, 99]
+Target1_18 <- ['Source1_18_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_20 <- ['Source1_20_0'] with iter-1		[Success]
+[Clarify Off]
+Scope: length is 1, target in [14, 99]
+[Clarify Off]
+Scope: length is 1, target in [14, 99]
+[Clarify Off]
+Scope: length is 1, target in [14, 99]
+Target1_18 <- ['Source1_18_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_20 <- ['Source1_20_0'] with iter-1		[Success]
+Target1_21 <- ['Source1_21_0'] with iter-1		[Success]
+Target1_22 <- ['Source1_22_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [23, 99]
+Target1_23 <- ['Source1_23_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_24 <- ['Source1_24_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_27 <- ['Source1_27_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_34 <- ['Source1_34_0'] with iter-1		[Success]
+Target1_35 <- ['Source1_35_0'] with iter-1		[Success]
+Target1_41 <- ['Source1_41_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [29, 99]
+Target1_29 <- ['Source1_29_0'] with iter-1		[Success]
+Target1_34 <- ['Source1_34_0']				[Failed]
+	Error in the previous response: Error: ERROR:  malformed array literal: "IGHJ5*02"
+DETAIL:  Array value must start with "{" or dimension information.
+CONTEXT:  COPY source1_34_0, line 2, column j_call: "IGHJ5*02"
+
+Target1_35 <- ['Source1_35_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_38 <- ['Source1_38_0'] with iter-1		[Success]
+Target1_40 <- ['Source1_40_0']				[Failed]
+	Error in the previous response: Error: ERROR:  syntax error at or near "Finish"
+LINE 54: Finish;
+         ^
+
+Target1_41 <- ['Source1_41_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_43 <- ['Source1_43_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_44 <- ['Source1_44_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type integer: "*"
+CONTEXT:  COPY source1_44_0, line 26, column Value: "*"
+
+Target1_46 <- ['Source1_46_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: 0.0, 1.0, 1.0
+				Case accuracy: 0.67
+Target1_48 <- ['Source1_48_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: 0.0, 1.0, 1.0
+				Case accuracy: 0.67
+Target1_52 <- ['Source1_52_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: 1.0, 0.0
+				Case accuracy: 0.50
+Target1_53 <- ['Source1_53_0']				[Failed]
+	Error in the previous response: Error: ERROR:  syntax error at or near "Finish"
+LINE 45: Finish;
+         ^
+
+Target1_54 <- ['Source1_54_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_55 <- ['Source1_55_0'] with iter-1		[Success]
+Target1_57 <- ['Source1_57_0']				[Failed]
+	Error in the previous response: Error: ERROR:  syntax error at or near "Finish"
+LINE 37: Finish[transformation_sql_code]
+         ^
+
+Target1_59 <- ['Source1_59_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type integer: "2.0"
+CONTEXT:  COPY source1_59_0, line 2, column orderlinenumber: "2.0"
+
+Target1_60 <- ['Source1_60_0'] with iter-1		[Success]
+Target1_61 <- ['Source1_61_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_62 <- ['Source1_62_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: 0.9895833333333334, 1.0, 1.0
+				Case accuracy: 1.00
+Target1_65 <- ['Source1_65_0'] with iter-1		[Success]
+Target1_67 <- ['Source1_67_0'] with iter-1		[Success]
+Target1_68 <- ['Source1_68_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_71 <- ['Source1_71_0'] with iter-1		[Success]
+Target1_72 <- ['Source1_72_0'] with iter-1		[Success]
+Target1_75 <- ['Source1_75_0']				[Failed]
+	Error in the previous response: Error: ERROR:  syntax error at or near "Finish"
+LINE 74: Finish;
+         ^
+
+Target1_77 <- ['Source1_77_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_78 <- ['Source1_78_0']				[Failed]
+	Error in the previous response: Error: ERROR:  syntax error at or near "User"
+LINE 9:     User TEXT,
+            ^
+
+Target1_80 <- ['Source1_80_0'] with iter-1		[Success]
+Target1_81 <- ['Source1_81_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_82 <- ['Source1_82_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_84 <- ['Source1_84_0'] with iter-1		[Success]
+Target1_86 <- ['Source1_86_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: 1.0, 0.0
+				Case accuracy: 0.50
+Target1_87 <- ['Source1_87_0']				[Failed]
+	Error in the previous response: Error: ERROR:  syntax error at or near "Finish"
+LINE 30: Finish;
+         ^
+
+Target1_88 <- ['Source1_88_0']				[Failed]
+	Error in the previous response: Error: ERROR:  date/time field value out of range: "24/03/2019"
+HINT:  Perhaps you need a different "datestyle" setting.
+CONTEXT:  COPY source1_88_0, line 2, column date_of_journey: "24/03/2019"
+
+Target1_89 <- ['Source1_89_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type date: "date"
+CONTEXT:  COPY source1_89_0, line 2, column date: "date"
+
+Target1_90 <- ['Source1_90_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type bigint: "8.874739571039519e+17"
+CONTEXT:  COPY source1_90_0, line 21, column retweeted_status_id: "8.874739571039519e+17"
+
+Target1_91 <- ['Source1_91_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type numeric: ""
+CONTEXT:  COPY source1_91_0, line 2, column market_value: ""
+
+Target1_92 <- ['Source1_92_0']				[Failed]
+	Error in the previous response: Error: ERROR:  syntax error at or near "Finish"
+LINE 48: Finish;
+         ^
+
+Target1_93 <- ['Source1_93_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type numeric: ""
+CONTEXT:  COPY source1_93_0, line 2, column bet: ""
+
+Target1_95 <- ['Source1_95_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_97 <- ['Source1_97_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: 1.0, 0.0
+				Case accuracy: 0.50
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Error in the previous response: Error: ERROR:  date/time field value out of range: "2015-04-01 13:60:41"
+CONTEXT:  COPY source1_99_0, line 204, column timestamp: "2015-04-01 13:60:41"
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_9 <- ['Source1_9_0']				[Failed]
+	Error in the previous response: Error: ERROR:  extra data after last expected column
+CONTEXT:  COPY source1_9_0, line 2: "1,AL,0,1,889920,490850,129070,256900,526740,1505430,598680,11517112,712630,9014595,116620,101108,497..."
+
+Target1_10 <- ['Source1_10_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: 1.0, 0.9982142857142857, 1.0, 1.0, 1.0, 1.0
+				Case accuracy: 1.00
+Target1_13 <- ['Source1_13_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_18 <- ['Source1_18_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_22 <- ['Source1_22_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_23 <- ['Source1_23_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: 1.0, 0.5758424780138532
+				Case accuracy: 0.79
+Target1_24 <- ['Source1_24_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_27 <- ['Source1_27_0']				[Failed]
+	Error in the previous response: Error: ERROR:  syntax error at or near "Finish"
+LINE 136: Finish[transformation_sql_code];
+          ^
+
+Target1_40 <- ['Source1_40_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type integer: "30.0"
+CONTEXT:  COPY source1_40_0, line 2, column quantityordered: "30.0"
+
+Target1_41 <- ['Source1_41_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_43 <- ['Source1_43_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_44 <- ['Source1_44_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type numeric: "*"
+CONTEXT:  COPY source1_44_0, line 26, column Value: "*"
+
+Target1_46 <- ['Source1_46_0']				[Failed]
+	Error in the previous response: Error: ERROR:  syntax error at or near "Finish"
+LINE 54: Finish[transformation_sql_code]
+         ^
+
+Target1_48 <- ['Source1_48_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type date: "Mar-08"
+CONTEXT:  COPY source1_48_0, line 2, column Value Date: "Mar-08"
+
+Target1_52 <- ['Source1_52_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_53 <- ['Source1_53_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_54 <- ['Source1_54_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_57 <- ['Source1_57_0'] with iter-1		[Success]
+Target1_59 <- ['Source1_59_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type integer: "2.0"
+CONTEXT:  COPY source1_59_0, line 2, column orderlinenumber: "2.0"
+
+Target1_61 <- ['Source1_61_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_62 <- ['Source1_62_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: 0.9895833333333334, 1.0, 1.0
+				Case accuracy: 1.00
+Target1_68 <- ['Source1_68_0'] with iter-1		[Success]
+Target1_75 <- ['Source1_75_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_77 <- ['Source1_77_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_78 <- ['Source1_78_0']				[Failed]
+	Error in the previous response: Error: ERROR:  syntax error at or near "User"
+LINE 23:     User TEXT,
+             ^
+
+Target1_81 <- ['Source1_81_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_82 <- ['Source1_82_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_86 <- ['Source1_86_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: 1.0, 0.02857142857142857
+				Case accuracy: 0.51
+Target1_87 <- ['Source1_87_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_88 <- ['Source1_88_0']				[Failed]
+	Error in the previous response: Error: ERROR:  date/time field value out of range: "24/03/2019"
+HINT:  Perhaps you need a different "datestyle" setting.
+CONTEXT:  COPY source1_88_0, line 2, column date_of_journey: "24/03/2019"
+
+[Clarify Off]
+Scope: length is 1, target in [89, 99]
+Target1_89 <- ['Source1_89_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type date: "date"
+CONTEXT:  COPY source1_89_0, line 2, column date: "date"
+
+Target1_90 <- ['Source1_90_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type bigint: "8.874739571039519e+17"
+CONTEXT:  COPY source1_90_0, line 21, column retweeted_status_id: "8.874739571039519e+17"
+
+Target1_91 <- ['Source1_91_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type numeric: ""
+CONTEXT:  COPY source1_91_0, line 2, column market_value: ""
+
+Target1_92 <- ['Source1_92_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: 1.0, 0.98, 0.96
+				Case accuracy: 0.98
+Target1_93 <- ['Source1_93_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type numeric: ""
+CONTEXT:  COPY source1_93_0, line 2, column bet: ""
+
+Target1_95 <- ['Source1_95_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+Target1_97 <- ['Source1_97_0']				[Failed]
+	Error in the previous response: Error: ERROR:  syntax error at or near "Finish"
+LINE 50: Finish;
+         ^
+
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Error in the previous response: Error: ERROR:  date/time field value out of range: "2015-04-01 13:60:41"
+CONTEXT:  COPY source1_99_0, line 204, column timestamp: "2015-04-01 13:60:41"
+
+[Clarify Off]
+Scope: length is 1, target in [89, 99]
+Target1_27 <- ['Source1_27_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [89, 99]
+Target1_97 <- ['Source1_97_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: 1.0, 0.0
+				Case accuracy: 0.50
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_16 <- ['Source1_16_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type integer: "2.0"
+CONTEXT:  COPY source1_16_0, line 2, column orderlinenumber: "2.0"
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_16 <- ['Source1_16_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type integer: "2.0"
+CONTEXT:  COPY source1_16_0, line 2, column orderlinenumber: "2.0"
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_16 <- ['Source1_16_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type integer: "30.0"
+CONTEXT:  COPY source1_16_0, line 2, column quantityordered: "30.0"
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_16 <- ['Source1_16_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_16 <- ['Source1_16_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type integer: "2.0"
+CONTEXT:  COPY source1_16_0, line 2, column orderlinenumber: "2.0"
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_16 <- ['Source1_16_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type integer: "2.0"
+CONTEXT:  COPY source1_16_0, line 2, column orderlinenumber: "2.0"
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_16 <- ['Source1_16_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_16 <- ['Source1_16_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_16 <- ['Source1_16_0'] with iter-1		[Success]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_40 <- ['Source1_40_0'] with iter-1		[Success]
+Target1_59 <- ['Source1_59_0'] with iter-1		[Success]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]

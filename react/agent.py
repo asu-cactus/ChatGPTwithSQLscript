@@ -1,8 +1,8 @@
 # agent.py
 from schema_transform_tools import SchemaTransformTools
 from llm_models import *
-from prompts import init_template, ultimate_task, examples
-from langchain import PromptTemplate
+from prompts import init_template, init_template_no_clarify, ultimate_task, examples, examples_no_clarify
+from langchain.prompts import PromptTemplate
 from action import ActionGraph
 import random
 from mcts import mcts
@@ -14,25 +14,35 @@ import operator
 
 
 class Agent:
-    def __init__(self, source_schema, target_schema, source_examples, target_examples, max_step=10):
+    def __init__(self, source_name, target_name, test_0_path, source_schema, target_schema, source_examples, target_examples, result_path, clarify_on=False, max_step=10):
+        self.source_name = source_name
+        self.target_name = target_name
+        self.test_0_path = test_0_path
         self.source_schema = source_schema
         self.target_schema = target_schema
         self.source_examples = source_examples
         self.target_examples = target_examples
+        self.result_path = result_path
+        self.clarify_on = clarify_on
         self.max_step = max_step
         self.state = None
         self.action_graph = ActionGraph()
         self.performed_actions = set()
         self.mcts = mcts(timeLimit=1000)
+
         template = PromptTemplate(
-            input_variables=["examples", "source_examples", "target_examples", "source_schema", "target_schema"],
-            template=init_template)
+            input_variables=["examples", "source_examples", "target_examples", "source_schema", "target_schema", "source_name", "target_name", "test_0_path", "result_path"],
+            template=init_template if clarify_on else init_template_no_clarify)
         self.prompt = template.format(
-            examples=examples,
+            examples=examples if clarify_on else examples_no_clarify,
             source_schema=source_schema,
             target_schema=target_schema,
             source_examples=source_examples,
-            target_examples=target_examples
+            target_examples=target_examples,
+            source_name=source_name,
+            target_name=target_name,
+            test_0_path=test_0_path,
+            result_path=result_path
         )
         self.ultimate_task = ultimate_task
         self.transformer = SchemaTransformTools(source_schema, target_schema, source_examples, target_examples)
@@ -80,7 +90,7 @@ class Agent:
         self.state = self.prompt + self.ultimate_task + "\n"
 
         n_calls, n_badcalls = 0, 0
-        picker = [-1] *10
+        picker = [-1] *20
         #picker[2] = 1
         for i in range(1, self.max_step + 1):
             n_calls += 1
