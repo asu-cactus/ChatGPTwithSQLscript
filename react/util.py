@@ -70,7 +70,7 @@ def extract_last_insert_table_name(query):
     """
     Extracts the table name from the last INSERT INTO clause in the given SQL query.
     """
-    matches = re.findall(r"INSERT\s+INTO\s+(\w+)", query, re.IGNORECASE)
+    matches = re.findall(r"INSERT\s+INTO\s+(\"[^\"]+\"|\w+)", query, re.IGNORECASE)
     if matches:
         return matches[-1]
     return None

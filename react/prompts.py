@@ -72,7 +72,7 @@ Observation 5: CREATE TABLE source_table (datetime TEXT, zone_16 NUMERIC);
          COPY (SELECT * FROM target_table) TO '/path/to/your/sub_folder/target_name_result.csv' WITH CSV HEADER;
 ------------------------------------------------------------------------------------------------------------------------
 """
-
+'''
 type_predict_template = """
 You are a Postgres SQL developer. Given the source schema '{source_schema}', target schema '{target_schema}', source data examples {source_examples}, and target data examples {target_examples}, your task is to determine the data types for each field in these schemas based exclusively on the formats present in the provided data samples.
 
@@ -81,6 +81,16 @@ Examine each field in the source and target schemas and their corresponding samp
 Provide a summary of the predicted data types for each field, ensuring your predictions reflect the data formats exactly as they appear in the samples, with no contextual assumptions.
 
 Enclose your final data type predictions within [START] and [END] markers for clarity.
+"""
+'''
+type_predict_template = """
+You are a Postgres SQL developer. Given the source schema '{source_schema}', target schema '{target_schema}', source data examples {source_examples}, and target data examples {target_examples}, your task is to determine the data types for each field in these schemas. Your analysis should be based exclusively on the formats present in the provided data samples.
+
+Carefully examine each field in the source and target schemas alongside their corresponding sample values. Base your data type predictions on the observed formats in these samples. For instance, if a date field in the samples is in the format 'DD/MM/YYYY', classify it as TEXT to maintain the format. For a numeric field with decimal points (e.g., '2.0'), classify it as DECIMAL or FLOAT. Do not make predictions based on typical context or standard practices but strictly on the data format present in the examples.
+
+Provide a detailed summary of the predicted data types for each field. Ensure that your predictions align precisely with the formats as they appear in the samples, with emphasis on accurate format representation.
+
+Enclose your final data type predictions within [START] and [END] markers for clarity. This summary should serve as a clear and precise guide for setting up the database schema according to the specific needs dictated by the data's format.
 """
 
 column_mapping_template = """
@@ -139,12 +149,13 @@ Transformation SQL Code Steps:
 Ensure the 'transformation_sql_code' incorporates insights from all tools, especially the enhanced aggregation analysis, tailored to the specific requirements of the given schemas and data paths.
 
 """
-
-init_template_no_clarify = """Perform a SQL schema transformation task with interleaved Thought, Action, Observation steps. Given the source and target schemas, provide a transformation strategy and relevant SQL operations. Use the following actions/tools:
+'''
+init_template_no_clarify = """
+Perform a SQL schema transformation task with interleaved Thought, Action, Observation steps. Given the source and target schemas, provide a transformation strategy and relevant SQL operations. Use the following actions/tools:
 
 Essential Actions at Your Disposal:
 - TypePredict (Robust Decision-Making): Predicts the datatype for columns, bearing in mind the subset nature of the provided source data. Given the potential for unseen decimal values in the complete dataset, default to 'DECIMAL' for numerical columns unless there is absolute certainty that the data is strictly integers. This approach is to preempt and prevent type mismatch errors in the full dataset. [Parameters: source_column_examples, target_column_examples].
-- Mapping: Establishes correspondences between source and target schema columns. [Parameters: source_schema, target_schema].
+- Mapping: Establishes correspondences between source and target schema columns. Ensure to use double quotes for any reserved keywords used as column names, such as "user". [Parameters: source_schema, target_schema].
 - Aggregation (Contextual Analysis): Determines if target columns are aggregates of source columns and infers the types of aggregation appropriate for the data context. [Parameters: source_schema, target_schema].
 - Conditional: Identifies conditions or filters for the transformation. [Parameters: source_schema, target_schema, condition].
 
@@ -163,16 +174,54 @@ Your Task Details:
 7. Data File Path: {test_0_path}.
 
 The task concludes with the "Finish[transformation_sql_code]" action.
-In the mandatory fish action: "Finish[transformation_sql_code]" with your finalized transformation SQL code. This step marks the completion of the task.
-The 'transformation_sql_code' is a placeholder and must be replaced with the actual transformation SQL code, the code must incorporate insights from all tools, especially the aggregation analysis, and be tailored to the specific schemas and data paths. 
+In the mandatory final action: "Finish[transformation_sql_code]" with your finalized transformation SQL code. This step marks the completion of the task.
+The 'transformation_sql_code' is a placeholder and must be replaced with the actual transformation SQL code. The code must incorporate insights from all tools, especially the aggregation analysis, and be tailored to the specific schemas and data paths. 
 
 In the Finish action, follow and only use the following steps to generate the 'transformation_sql_code'; ensure the syntax correctness of the code, do not use 'Finish' in transformation_sql_code:
 1. Analyze using all tools for a comprehensive understanding and accurate data transformation.
-2. Create Source Table: Define and create the source table '{source_name}', dropping it first if it exists.
+2. Create Source Table: Define and create the source table '{source_name}', dropping it first if it exists. Use double quotes for any reserved keywords used as column names. Ensure proper handling of inferred date formats from the examples.
 3. Data Import: Load data from CSV at '{test_0_path}', treating empty values as NULL.
-4. Create Target Table: Define and create the target table '{target_name}', dropping it first if it exists.
+4. Create Target Table: Define and create the target table '{target_name}', dropping it first if it exists. Use double quotes for any reserved keywords used as column names. Ensure proper handling of inferred date formats from the examples.
 5. COPY the SQL result into a CSV file "{result_path}{target_name}_result.csv".
 """
+'''
+init_template_no_clarify = """
+Perform a SQL schema transformation task with interleaved Thought, Action, Observation steps. Given the source and target schemas, provide a transformation strategy and relevant SQL operations. Use the following actions/tools:
+
+Essential Actions at Your Disposal:
+- TypePredict (Robust Decision-Making): Predicts the datatype for columns, bearing in mind the subset nature of the provided source data. Given the potential for unseen decimal values in the complete dataset, default to 'DECIMAL' for numerical columns unless there is absolute certainty that the data is strictly integers. For date columns, carefully consider whether to use 'DATE' or 'TEXT' based on the format and usage requirements. [Parameters: source_column_examples, target_column_examples].
+- Mapping: Establishes correspondences between source and target schema columns. Ensure to use double quotes for any reserved keywords used as column names, such as "user". Include strategies for handling date formats in this process. [Parameters: source_schema, target_schema].
+- Aggregation (Contextual Analysis): Determines if target columns are aggregates of source columns and infers the types of aggregation appropriate for the data context. Pay special attention to date fields and how their format might impact aggregation. [Parameters: source_schema, target_schema].
+- Conditional: Identifies conditions or filters for the transformation, including any related to date formats. [Parameters: source_schema, target_schema, condition].
+
+Mandatory Final Action:
+- Finish: This is the conclusive step. Execute "Finish[transformation_sql_code]" with the final SQL code for the transformation. Ensure this code accounts for the handling of date formats, whether preserving them as 'TEXT' or converting them to 'DATE', and addresses any syntax issues. [Parameters: transformation_sql_code].
+
+Example for Guidance: {examples}
+
+Your Task Details:
+1. Source Schema: {source_schema}
+2. Source Table Name: {source_name}
+3. Target Schema: {target_schema}
+4. Target Table Name: {target_name}
+5. Source Examples: {source_examples}
+6. Target Examples: {target_examples}
+7. Data File Path: {test_0_path}.
+
+The task concludes with the "Finish[transformation_sql_code]" action.
+In the mandatory final action: "Finish[transformation_sql_code]" with your finalized transformation SQL code. This step marks the completion of the task.
+The 'transformation_sql_code' is a placeholder and must be replaced with the actual transformation SQL code. The code must incorporate insights from all tools, especially the aggregation analysis, and be tailored to the specific schemas and data paths, with a particular focus on the correct handling of date formats.
+
+In the Finish action, follow and only use the following steps to generate the 'transformation_sql_code'; ensure the syntax correctness of the code, including the handling of date formats:
+1. Analyze using all tools for a comprehensive understanding and accurate data transformation.
+2. Create Source Table: Define and create the source table '{source_name}', dropping it first if it exists. Use double quotes for any reserved keywords used as column names and carefully handle date formats as per the analysis.
+3. Data Import: Load data from CSV at '{test_0_path}', treating empty values as NULL and correctly handling date formats.
+4. Create Target Table: Define and create the target table '{target_name}', dropping it first if it exists. Use double quotes for any reserved keywords used as column names and ensure date formats are correctly handled.
+5. COPY the SQL result into a CSV file "{result_path}{target_name}_result.csv".
+"""
+
+
+
 
 ultimate_task = 'Output the SQL code for the transformation.'
 

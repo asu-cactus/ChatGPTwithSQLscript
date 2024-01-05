@@ -409,8 +409,8 @@
     },
     {
         "Target Data Name": "Target1_90",
-        "Target Data Schema": "['dog_type']",
-        "Target Data Sample": "[[4471], [107], [96]]",
+        "Target Data Schema": "['dog_type', 'count']",
+        "Target Data Sample": "[['None', 4471], ['pupper', 107], ['doggo', 96]]",
         "Source Data Name": "Source1_90_0",
         "Source Data Schema": "['tweet_id', 'in_reply_to_status_id', 'in_reply_to_user_id', 'timestamp', 'source', 'text', 'retweeted_status_id', 'retweeted_status_user_id', 'retweeted_status_timestamp', 'expanded_urls', 'rating_numerator', 'rating_denominator', 'name', 'doggo', 'floofer', 'pupper', 'puppo']",
         "3 Samples of Source Data": "[[892420643555336193, nan, nan, '2017-08-01 16:23:56 +0000', '<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>', \"This is Phineas. He's a mystical boy. Only ever appears in the hole of a donut. 13/10 https://t.co/MgUWQ76dJU\", nan, nan, nan, 'https://twitter.com/dog_rates/status/892420643555336193/photo/1', 13, 10, 'Phineas', nan, nan, nan, nan], [892177421306343426, nan, nan, '2017-08-01 00:17:27 +0000', '<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>', \"This is Tilly. She's just checking pup on you. Hopes you're doing ok. If not, she's available for pats, snugs, boops, the whole bit. 13/10 https://t.co/0Xxu71qeIV\", nan, nan, nan, 'https://twitter.com/dog_rates/status/892177421306343426/photo/1', 13, 10, 'Tilly', nan, nan, nan, nan], [891815181378084864, nan, nan, '2017-07-31 00:18:03 +0000', '<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>', 'This is Archie. He is a rare Norwegian Pouncing Corgo. Lives in the tall grass. You never know when one may strike. 12/10 https://t.co/wUnZnhtVJB', nan, nan, nan, 'https://twitter.com/dog_rates/status/891815181378084864/photo/1', 12, 10, 'Archie', nan, nan, nan, nan]]"

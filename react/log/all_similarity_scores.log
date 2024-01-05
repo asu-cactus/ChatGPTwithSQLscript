@@ -470,3 +470,310 @@ Target1_40 <- ['Source1_40_0'] with iter-1		[Success]
 Target1_59 <- ['Source1_59_0'] with iter-1		[Success]
 [Clarify Off]
 Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_10 <- ['Source1_10_0'] with iter-1		[Success]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_78 <- ['Source1_78_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_88 <- ['Source1_88_0']				[Failed]
+	Error in the previous response: Error: ERROR:  date/time field value out of range: "24/03/2019"
+HINT:  Perhaps you need a different "datestyle" setting.
+CONTEXT:  COPY Source1_88_0, line 2, column Date_of_Journey: "24/03/2019"
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_88 <- ['Source1_88_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_88 <- ['Source1_88_0']				[Failed]
+	Error in the previous response: Error: ERROR:  date/time field value out of range: "24/03/2019"
+HINT:  Perhaps you need a different "datestyle" setting.
+CONTEXT:  COPY Source1_88_0, line 2, column Date_of_Journey: "24/03/2019"
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_88 <- ['Source1_88_0']				[Failed]
+	Error in the previous response: Error: ERROR:  date/time field value out of range: "24/03/2019"
+HINT:  Perhaps you need a different "datestyle" setting.
+CONTEXT:  COPY Source1_88_0, line 2, column Date_of_Journey: "24/03/2019"
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_88 <- ['Source1_88_0']				[Failed]
+	Error in the previous response: Error: ERROR:  date/time field value out of range: "24/03/2019"
+HINT:  Perhaps you need a different "datestyle" setting.
+CONTEXT:  COPY Source1_88_0, line 2, column Date_of_Journey: "24/03/2019"
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_88 <- ['Source1_88_0']				[Failed]
+	Error in the previous response: Error: ERROR:  date/time field value out of range: "24/03/2019"
+HINT:  Perhaps you need a different "datestyle" setting.
+CONTEXT:  COPY Source1_88_0, line 2, column Date_of_Journey: "24/03/2019"
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_88 <- ['Source1_88_0']				[Failed]
+	Error in the previous response: Error: ERROR:  date/time field value out of range: "24/03/2019"
+HINT:  Perhaps you need a different "datestyle" setting.
+CONTEXT:  COPY Source1_88_0, line 2, column Date_of_Journey: "24/03/2019"
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_88 <- ['Source1_88_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_88 <- ['Source1_88_0']				[Failed]
+	Error in the previous response: Error: ERROR:  syntax error at or near "Invalid"
+LINE 1: Invalid action: Observation 1:
+        ^
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_88 <- ['Source1_88_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_88 <- ['Source1_88_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_88 <- ['Source1_88_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_88 <- ['Source1_88_0'] with iter-1		[Success]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_90 <- ['Source1_90_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type bigint: ""
+CONTEXT:  COPY Source1_90_0, line 2, column in_reply_to_status_id: ""
+
+Target1_90 <- ['Source1_90_0']				[Failed]
+	Please check the similarity scores:
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_90 <- ['Source1_90_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_90 <- ['Source1_90_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type bigint: ""
+CONTEXT:  COPY Source1_90_0, line 2, column in_reply_to_status_id: ""
+
+Target1_90 <- ['Source1_90_0']				[Failed]
+	Please check the similarity scores:
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_90 <- ['Source1_90_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type double precision: ""
+CONTEXT:  COPY Source1_90_0, line 2, column in_reply_to_status_id: ""
+
+Target1_90 <- ['Source1_90_0']				[Failed]
+	Please check the similarity scores:
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_90 <- ['Source1_90_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type double precision: ""
+CONTEXT:  COPY Source1_90_0, line 2, column in_reply_to_status_id: ""
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_90 <- ['Source1_90_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type timestamp: ""
+CONTEXT:  COPY Source1_90_0, line 2, column retweeted_status_timestamp: ""
+
+Target1_90 <- ['Source1_90_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type double precision: ""
+CONTEXT:  COPY Source1_90_0, line 2, column in_reply_to_status_id: ""
+
+Target1_90 <- ['Source1_90_0']				[Failed]
+	Please check the similarity scores:
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_90 <- ['Source1_90_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type double precision: ""
+CONTEXT:  COPY Source1_90_0, line 2, column in_reply_to_status_id: ""
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_90 <- ['Source1_90_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type double precision: "NULL"
+CONTEXT:  COPY Source1_90_0, line 2, column in_reply_to_status_id: "NULL"
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_91 <- ['Source1_91_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type numeric: ""
+CONTEXT:  COPY Source1_91_0, line 2, column Market_value: ""
+
+Target1_91 <- ['Source1_91_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.47191489361702127, 1.0
+				Case accuracy: 0.95
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_91 <- ['Source1_91_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type numeric: ""
+CONTEXT:  COPY Source1_91_0, line 2, column Market_value: ""
+
+Target1_91 <- ['Source1_91_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type numeric: ""
+CONTEXT:  COPY Source1_91_0, line 2, column Market_value: ""
+
+Target1_91 <- ['Source1_91_0']				[Failed]
+	Please check the similarity scores:
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_91 <- ['Source1_91_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type numeric: ""
+CONTEXT:  COPY Source1_91_0, line 2, column Market_value: ""
+
+Target1_91 <- ['Source1_91_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type numeric: ""
+CONTEXT:  COPY Source1_91_0, line 2, column Market_value: ""
+
+Target1_91 <- ['Source1_91_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type numeric: ""
+CONTEXT:  COPY Source1_91_0, line 2, column Market_value: ""
+
+Target1_91 <- ['Source1_91_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type numeric: ""
+CONTEXT:  COPY Source1_91_0, line 2, column Market_value: ""
+
+Target1_91 <- ['Source1_91_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type numeric: ""
+CONTEXT:  COPY Source1_91_0, line 2, column Market_value: ""
+
+Target1_91 <- ['Source1_91_0']				[Failed]
+	Please check the similarity scores:
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_91 <- ['Source1_91_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type numeric: ""
+CONTEXT:  COPY Source1_91_0, line 2, column Market_value: ""
+
+Target1_91 <- ['Source1_91_0']				[Failed]
+	Error in the previous response: Error: ERROR:  invalid input syntax for type numeric: ""
+CONTEXT:  COPY Source1_91_0, line 2, column Market_value: ""
+
+Target1_91 <- ['Source1_91_0'] with iter-3		[Success]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_92 <- ['Source1_92_0'] with iter-1		[Success]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_93 <- ['Source1_93_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: 1.0, 0.0, 1.0, 1.0
+		 iter-2: missmatch
+		 iter-3: missmatch
+		 iter-4: missmatch
+		 iter-5: missmatch
+				Case accuracy: 0.75
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Error in the previous response: Error: ERROR:  date/time field value out of range: "2015-04-01 13:60:41"
+CONTEXT:  COPY Source1_99_0, line 204, column timestamp: "2015-04-01 13:60:41"
+
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Error in the previous response: Error: ERROR:  date/time field value out of range: "2015-04-01 13:60:41"
+CONTEXT:  COPY Source1_99_0, line 204, column timestamp: "2015-04-01 13:60:41"
+
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Error in the previous response: Error: ERROR:  date/time field value out of range: "2015-04-01 13:60:41"
+CONTEXT:  COPY Source1_99_0, line 204, column timestamp: "2015-04-01 13:60:41"
+
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Error in the previous response: Error: ERROR:  syntax error at or near "Invalid"
+LINE 1: Invalid action:  Write a SQL script that includes a data imp...
+        ^
+
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Error in the previous response: Error: ERROR:  date/time field value out of range: "2015-04-01 13:60:41"
+CONTEXT:  COPY Source1_99_0, line 204, column timestamp: "2015-04-01 13:60:41"
+
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Error in the previous response: Error: ERROR:  date/time field value out of range: "2015-04-01 13:60:41"
+CONTEXT:  COPY Source1_99_0, line 204, column timestamp: "2015-04-01 13:60:41"
+
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Error in the previous response: Error: ERROR:  date/time field value out of range: "2015-04-01 13:60:41"
+CONTEXT:  COPY Source1_99_0, line 204, column timestamp: "2015-04-01 13:60:41"
+
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Error in the previous response: Error: ERROR:  syntax error at or near "Invalid"
+LINE 1: Invalid action:  Write SQL code to create the source table w...
+        ^
+
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Error in the previous response: Error: ERROR:  date/time field value out of range: "2015-04-01 13:60:41"
+CONTEXT:  COPY Source1_99_0, line 204, column timestamp: "2015-04-01 13:60:41"
+
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Error in the previous response: Error: ERROR:  syntax error at or near "Invalid"
+LINE 1: Invalid action:  Write a SQL statement that imports the data...
+        ^
+
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Error in the previous response: Error: ERROR:  date/time field value out of range: "2015-04-01 13:60:41"
+CONTEXT:  COPY Source1_99_0, line 204, column timestamp: "2015-04-01 13:60:41"
+
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+		 iter-2: missmatch
+				Case accuracy: 0.00

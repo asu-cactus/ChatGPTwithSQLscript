@@ -1,0 +1,651 @@
+"C:\Users\Guoxin Sun\.conda\envs\LLM\python.exe" C:\PycharmProjects\ChatGPTwithSQLscript\react\run.py
+Postgres connection established.
+target_id: 1, max_target_id: 99, source_id: 0, max_source_id: 0
+Total number of test cases: 57
+Number of test cases that have been tested at least once: 19
+Number of Test cases after filtering: 39
+test_cases_list: ['Target1_91']
+*** itr 1 ***
+Thought 1: Predict the type of the source and target columns.
+
+Action 1:  TypePredict[source_examples, target_examples]
+Observation 1:
+
+Based on the provided data samples, here are the predicted data types for each field in the source and target schemas:
+
+1. Name: TEXT
+   - The 'Name' field contains characters and is case-sensitive, which suggests using the TEXT data type to accommodate any kind of character data.
+
+2. Position: TEXT
+   - The 'Position' field contains text describing the playing position, which does not require any special numeric or date-related data type.
+
+3. Age: INTEGER
+   - The 'Age' field contains whole numbers without any decimal points, which suggests using the INTEGER data type.
+
+4. Team_from: TEXT
+   - The 'Team_from' field contains text representing the name of a team, which is best stored as TEXT.
+
+5. League_from: TEXT
+   - The 'League_from' field contains text representing the name of a league, which is best stored as TEXT.
+
+6. Team_to: TEXT
+   - The 'Team_to' field contains text representing the name of a team, which is best stored as TEXT.
+
+7. League_to: TEXT
+   - The 'League_to' field contains text representing the name of a league, which is best stored as TEXT.
+
+8. Season: TEXT
+   - The 'Season' field contains a season range in the format 'YYYY-YYYY', which is best stored as TEXT to maintain the exact format.
+
+9. Market_value: FLOAT or DECIMAL
+   - The 'Market_value' field is represented as 'nan' in the sample, which suggests it could be a numeric field with the possibility of decimal points or not a number (NaN) values. Since we cannot determine the exact numeric format from the provided sample, it is safe to use FLOAT or DECIMAL to accommodate potential decimal values or NaN.
+
+10. Transfer_fee: INTEGER
+    - The 'Transfer_fee' field contains whole numbers representing currency amounts, which suggests using the INTEGER data type since there are no decimal points in the sample.
+
+It is important to note that the 'Market_value' field is a bit ambiguous due to the 'nan' placeholder in the sample data. In a real-world scenario, further clarification or additional samples would be needed to determine the most appropriate data type for this field. However, based on the information provided, FLOAT or DECIMAL is chosen to allow for the possibility of non-integer values.
+
+
+
+ohh... Action 2: Mapping[source_schema, target_schema]
+Thought 2: Action 2: Mapping[source_schema, target_schema]
+Action 2: Mapping[source_schema, target_schema]
+Observation 2:
+The source schema and the target schema have a one-to-one direct mapping for each column as follows:
+
+- 'Name' maps to 'Name'
+- 'Position' maps to 'Position'
+- 'Age' maps to 'Age'
+- 'Team_from' maps to 'Team_from'
+- 'League_from' maps to 'League_from'
+- 'Team_to' maps to 'Team_to'
+- 'League_to' maps to 'League_to'
+- 'Season' maps to 'Season'
+- 'Market_value' maps to 'Market_value'
+- 'Transfer_fee' maps to 'Transfer_fee'
+
+There are no discrepancies or mismatches between the source schema and the target schema.
+
+
+ohh... Action 3: Aggregation[source_schema, target_schema]
+Thought 3: Action 3: Aggregation[source_schema, target_schema]
+Action 3: Aggregation[source_schema, target_schema]
+Observation 3:
+No target columns are aggregates of source columns.
+
+
+ohh... Action 4: Conditional[source_schema, target_schema, condition]
+Thought 4: Action 4: Conditional[source_schema, target_schema, condition]
+Action 4: Conditional[source_schema, target_schema, condition]
+Observation 4:
+Based on the provided schemas, there are no explicit conditional dependencies given. However, typical conditions or filters that might need to be applied could include:
+
+- Ensuring that 'Age', 'Market_value', and 'Transfer_fee' are non-null and possibly ensuring they are positive numbers if that makes sense in the context.
+- Verifying that 'Team_from' and 'Team_to' belong to the correct 'League_from' and 'League_to', respectively.
+- Applying filters for specific 'Seasons' or other criteria based on the use case.
+
+Without specific business rules or data quality requirements, it's not possible to provide a definitive list of conditions or filters. The analysis would be based on the actual data and the business logic that needs to be applied.
+
+
+ohh... Action 5: Finish[transformation_sql_code]
+Thought 5: Action 5: Finish[transformation_sql_code]
+Action 5: Finish[transformation_sql_code]
+Observation 5:
+-- Drop the source table if it exists
+DROP TABLE IF EXISTS "Source1_91_0";
+
+-- Create the source table with appropriate data types
+CREATE TABLE "Source1_91_0" (
+    "Name" TEXT,
+    "Position" TEXT,
+    "Age" INTEGER,
+    "Team_from" TEXT,
+    "League_from" TEXT,
+    "Team_to" TEXT,
+    "League_to" TEXT,
+    "Season" TEXT,
+    "Market_value" DECIMAL,
+    "Transfer_fee" INTEGER
+);
+
+-- Load data from CSV into the source table
+COPY "Source1_91_0" FROM 'C:\PycharmProjects\ChatGPTwithSQLscript\react\github-pipelines\length1_91\test_0.csv' WITH (FORMAT csv, HEADER true, NULL 'nan');
+
+-- Drop the target table if it exists
+DROP TABLE IF EXISTS "Target1_91";
+
+-- Create the target table with appropriate data types
+CREATE TABLE "Target1_91" (
+    "Name" TEXT,
+    "Position" TEXT,
+    "Age" INTEGER,
+    "Team_from" TEXT,
+    "League_from" TEXT,
+    "Team_to" TEXT,
+    "League_to" TEXT,
+    "Season" TEXT,
+    "Market_value" DECIMAL,
+    "Transfer_fee" INTEGER
+);
+
+-- Insert data into the target table from the source table
+INSERT INTO "Target1_91" (
+    "Name",
+    "Position",
+    "Age",
+    "Team_from",
+    "League_from",
+    "Team_to",
+    "League_to",
+    "Season",
+    "Market_value",
+    "Transfer_fee"
+)
+SELECT
+    "Name",
+    "Position",
+    "Age",
+    "Team_from",
+    "League_from",
+    "Team_to",
+    "League_to",
+    "Season",
+    "Market_value",
+    "Transfer_fee"
+FROM
+    "Source1_91_0";
+
+-- Copy the result to a CSV file
+COPY (SELECT * FROM "Target1_91") TO 'C:\PycharmProjects\ChatGPTwithSQLscript\react\github-pipelines\length1_91\Target1_91_result.csv' WITH CSV HEADER;
+
+
+
+SQL Script Extracted from GPT Response:
+
+-- Drop the source table if it exists
+DROP TABLE IF EXISTS "Source1_91_0";
+
+-- Create the source table with appropriate data types
+CREATE TABLE "Source1_91_0" (
+    "Name" TEXT,
+    "Position" TEXT,
+    "Age" INTEGER,
+    "Team_from" TEXT,
+    "League_from" TEXT,
+    "Team_to" TEXT,
+    "League_to" TEXT,
+    "Season" TEXT,
+    "Market_value" DECIMAL,
+    "Transfer_fee" INTEGER
+);
+
+-- Load data from CSV into the source table
+COPY "Source1_91_0" FROM 'C:\PycharmProjects\ChatGPTwithSQLscript\react\github-pipelines\length1_91\test_0.csv' WITH (FORMAT csv, HEADER true, NULL 'nan');
+
+-- Drop the target table if it exists
+DROP TABLE IF EXISTS "Target1_91";
+
+-- Create the target table with appropriate data types
+CREATE TABLE "Target1_91" (
+    "Name" TEXT,
+    "Position" TEXT,
+    "Age" INTEGER,
+    "Team_from" TEXT,
+    "League_from" TEXT,
+    "Team_to" TEXT,
+    "League_to" TEXT,
+    "Season" TEXT,
+    "Market_value" DECIMAL,
+    "Transfer_fee" INTEGER
+);
+
+-- Insert data into the target table from the source table
+INSERT INTO "Target1_91" (
+    "Name",
+    "Position",
+    "Age",
+    "Team_from",
+    "League_from",
+    "Team_to",
+    "League_to",
+    "Season",
+    "Market_value",
+    "Transfer_fee"
+)
+SELECT
+    "Name",
+    "Position",
+    "Age",
+    "Team_from",
+    "League_from",
+    "Team_to",
+    "League_to",
+    "Season",
+    "Market_value",
+    "Transfer_fee"
+FROM
+    "Source1_91_0";
+
+-- Copy the result to a CSV file
+COPY (SELECT * FROM "Target1_91") TO 'C:\PycharmProjects\ChatGPTwithSQLscript\react\github-pipelines\length1_91\Target1_91_result.csv' WITH CSV HEADER;
+
+
+
+ iter1 Error in the previous response: Error: ERROR:  invalid input syntax for type numeric: ""
+CONTEXT:  COPY Source1_91_0, line 2, column Market_value: ""
+
+*** itr 2 ***
+Thought 1: Thought 1: Predict the type of the source and target columns, considering the examples provided and the nature of the data.
+
+Action 1:  TypePredict[source_examples, target_examples]
+Observation 1:
+
+Based on the provided source and target schemas, as well as the data examples, here are the predicted data types for each field:
+
+1. Name: TEXT
+   - The 'Name' field contains characters and is case-sensitive, which suggests using the TEXT data type to preserve the case and allow for any length of string.
+
+2. Position: TEXT
+   - The 'Position' field is similar to 'Name' in that it contains characters and should preserve case sensitivity. Therefore, TEXT is the appropriate data type.
+
+3. Age: INTEGER
+   - The 'Age' field contains whole numbers without any decimal points, which indicates that the INTEGER data type is suitable.
+
+4. Team_from: TEXT
+   - The 'Team_from' field contains characters and should preserve the case of the team names, so TEXT is the correct data type.
+
+5. League_from: TEXT
+   - The 'League_from' field, like 'Team_from', contains characters and should maintain case sensitivity, making TEXT the appropriate data type.
+
+6. Team_to: TEXT
+   - The 'Team_to' field should also be TEXT for the same reasons as 'Team_from' and 'League_from'.
+
+7. League_to: TEXT
+   - The 'League_to' field is consistent with 'League_from' and should also be TEXT.
+
+8. Season: TEXT
+   - The 'Season' field contains a range of years in a specific format ('YYYY-YYYY'), which should be preserved as is. Therefore, TEXT is the suitable data type.
+
+9. Market_value: FLOAT or DECIMAL
+   - The 'Market_value' field is not provided in the examples, but it is likely to contain numeric values with the potential for decimals. Since we cannot confirm the presence of decimals based on the examples, either FLOAT or DECIMAL could be used. However, if precision is important, DECIMAL is preferred.
+
+10. Transfer_fee: INTEGER
+    - The 'Transfer_fee' field contains whole numbers without any decimal points, as seen in the examples (e.g., 60000000), which suggests that INTEGER is the appropriate data type.
+
+It is important to note that the 'Market_value' field is represented as 'nan' in the examples, which typically stands for 'not a number'. In a SQL database, this could be represented as NULL. However, since the data type prediction should be based on the format, and no numeric format is provided, FLOAT or DECIMAL is suggested with the understanding that the field may contain NULL values.
+
+
+
+Thought 2: Thought 2: Map the source schema to the target schema, taking into account any reserved keywords and ensuring that the date formats are correctly handled.
+
+Action 2:  Mapping[source_schema, target_schema]
+Observation 2:
+The mappings between the `source_schema` and the `target_schema` are as follows:
+
+- 'Name' maps to 'Name'
+- 'Position' maps to 'Position'
+- 'Age' maps to 'Age'
+- 'Team_from' maps to 'Team_from'
+- 'League_from' maps to 'League_from'
+- 'Team_to' maps to 'Team_to'
+- 'League_to' maps to 'League_to'
+- 'Season' maps to 'Season'
+- 'Market_value' maps to 'Market_value'
+- 'Transfer_fee' maps to 'Transfer_fee'
+
+Each element in the source schema has a direct one-to-one mapping with the corresponding element in the target schema, in the same order.
+
+
+Thought 3: Thought 3: Identify if any target columns are aggregates of source columns and consider any conditions or filters that need to be applied, especially with regard to handling NULL values and date formats.
+
+Action 3:  Aggregation[source_schema, target_schema]
+Observation 3:
+No target columns are aggregates of source columns based on the provided data and schema examples.
+
+
+Thought 4: Thought 4: Identify if any conditions or filters need to be applied, especially with regard to handling NULL values and date formats.
+
+Action 4:  Conditional[source_schema, target_schema, condition]
+Observation 4:
+- Both schemas have the same columns, so no columns need to be added or removed.
+- Assuming that the data types are consistent across both schemas, no data type transformations are required.
+- No specific filters or conditions have been provided, so we would need more information about the business logic to apply any filters. For example, we might want to filter out records where 'Transfer_fee' is NULL if we are only interested in completed transfers.
+- Data quality checks should ensure that 'Age' is a positive integer, 'Market_value' and 'Transfer_fee' are non-negative numbers, and 'Season' is in the correct format (e.g., 'YYYY-YYYY').
+- If there are any referential integrity constraints (e.g., 'Team_from' and 'Team_to' must exist in a Teams table), these should be checked before the data transfer.
+
+In summary, without additional business logic or data quality requirements, no specific conditions or filters are identified based solely on the schema comparison. Data quality checks and referential integrity constraints should be considered during the data transfer process.
+
+
+Thought 5: Thought 5: Prepare the final transformation SQL code, ensuring that the source and target tables are created with the correct data types, handling NULL values appropriately, and that the data is imported and exported correctly.
+
+Action 5:  Finish[transformation_sql_code]
+Observation 5:
+-- Drop the source table if it exists
+DROP TABLE IF EXISTS "Source1_91_0";
+
+-- Create the source table with appropriate data types and handling of reserved keywords
+CREATE TABLE "Source1_91_0" (
+    "Name" TEXT,
+    "Position" TEXT,
+    "Age" INTEGER,
+    "Team_from" TEXT,
+    "League_from" TEXT,
+    "Team_to" TEXT,
+    "League_to" TEXT,
+    "Season" TEXT,
+    "Market_value" DECIMAL,
+    "Transfer_fee" INTEGER
+);
+
+-- Import data from the CSV file, treating empty values as NULL and correctly handling date formats
+COPY "Source1_91_0" ("Name", "Position", "Age", "Team_from", "League_from", "Team_to", "League_to", "Season", "Market_value", "Transfer_fee")
+FROM 'C:\PycharmProjects\ChatGPTwithSQLscript\react\github-pipelines\length1_91\test_0.csv'
+WITH (FORMAT csv, HEADER true, NULL 'nan');
+
+-- Drop the target table if it exists
+DROP TABLE IF EXISTS "Target1_91";
+
+-- Create the target table with appropriate data types and handling of reserved keywords
+CREATE TABLE "Target1_91" (
+    "Name" TEXT,
+    "Position" TEXT,
+    "Age" INTEGER,
+    "Team_from" TEXT,
+    "League_from" TEXT,
+    "Team_to" TEXT,
+    "League_to" TEXT,
+    "Season" TEXT,
+    "Market_value" DECIMAL,
+    "Transfer_fee" INTEGER
+);
+
+-- Insert data into the target table from the source table
+INSERT INTO "Target1_91" ("Name", "Position", "Age", "Team_from", "League_from", "Team_to", "League_to", "Season", "Market_value", "Transfer_fee")
+SELECT "Name", "Position", "Age", "Team_from", "League_from", "Team_to", "League_to", "Season", "Market_value", "Transfer_fee"
+FROM "Source1_91_0";
+
+-- Export the result to a CSV file
+COPY (SELECT * FROM "Target1_91")
+TO 'C:\PycharmProjects\ChatGPTwithSQLscript\react\github-pipelines\length1_91\Target1_91_result.csv'
+WITH (FORMAT csv, HEADER true);
+
+
+SQL Script Extracted from GPT Response:
+
+-- Drop the source table if it exists
+DROP TABLE IF EXISTS "Source1_91_0";
+
+-- Create the source table with appropriate data types and handling of reserved keywords
+CREATE TABLE "Source1_91_0" (
+    "Name" TEXT,
+    "Position" TEXT,
+    "Age" INTEGER,
+    "Team_from" TEXT,
+    "League_from" TEXT,
+    "Team_to" TEXT,
+    "League_to" TEXT,
+    "Season" TEXT,
+    "Market_value" DECIMAL,
+    "Transfer_fee" INTEGER
+);
+
+-- Import data from the CSV file, treating empty values as NULL and correctly handling date formats
+COPY "Source1_91_0" ("Name", "Position", "Age", "Team_from", "League_from", "Team_to", "League_to", "Season", "Market_value", "Transfer_fee")
+FROM 'C:\PycharmProjects\ChatGPTwithSQLscript\react\github-pipelines\length1_91\test_0.csv'
+WITH (FORMAT csv, HEADER true, NULL 'nan');
+
+-- Drop the target table if it exists
+DROP TABLE IF EXISTS "Target1_91";
+
+-- Create the target table with appropriate data types and handling of reserved keywords
+CREATE TABLE "Target1_91" (
+    "Name" TEXT,
+    "Position" TEXT,
+    "Age" INTEGER,
+    "Team_from" TEXT,
+    "League_from" TEXT,
+    "Team_to" TEXT,
+    "League_to" TEXT,
+    "Season" TEXT,
+    "Market_value" DECIMAL,
+    "Transfer_fee" INTEGER
+);
+
+-- Insert data into the target table from the source table
+INSERT INTO "Target1_91" ("Name", "Position", "Age", "Team_from", "League_from", "Team_to", "League_to", "Season", "Market_value", "Transfer_fee")
+SELECT "Name", "Position", "Age", "Team_from", "League_from", "Team_to", "League_to", "Season", "Market_value", "Transfer_fee"
+FROM "Source1_91_0";
+
+-- Export the result to a CSV file
+COPY (SELECT * FROM "Target1_91")
+TO 'C:\PycharmProjects\ChatGPTwithSQLscript\react\github-pipelines\length1_91\Target1_91_result.csv'
+WITH (FORMAT csv, HEADER true);
+
+
+ iter2 Error in the previous response: Error: ERROR:  invalid input syntax for type numeric: ""
+CONTEXT:  COPY Source1_91_0, line 2, column Market_value: ""
+
+*** itr 3 ***
+Thought 1: Predict the type of the source and target columns, considering the examples provided and the nature of the data.
+
+Action 1:  TypePredict[source_examples, target_examples]
+Observation 1:
+
+Based on the provided source and target schemas, as well as the data examples, here are the predicted data types for each field:
+
+1. Name: TEXT
+   - The 'Name' field contains characters and is case-sensitive, which suggests using the TEXT data type. In the target data, names are in lowercase, but since the format is still textual, TEXT is appropriate.
+
+2. Position: TEXT
+   - The 'Position' field contains text describing the player's position on the field. It is a string and should be stored as TEXT.
+
+3. Age: INTEGER
+   - The 'Age' field contains whole numbers representing the age of the players. Since there are no decimal points, the INTEGER data type is suitable.
+
+4. Team_from: TEXT
+   - The 'Team_from' field contains text representing the name of the team the player is transferring from. It should be stored as TEXT.
+
+5. League_from: TEXT
+   - The 'League_from' field contains text representing the name of the league the player's previous team belongs to. It should be stored as TEXT.
+
+6. Team_to: TEXT
+   - The 'Team_to' field contains text representing the name of the team the player is transferring to. It should be stored as TEXT.
+
+7. League_to: TEXT
+   - The 'League_to' field contains text representing the name of the league the player's new team belongs to. It should be stored as TEXT.
+
+8. Season: TEXT
+   - The 'Season' field contains a range of years in the format 'YYYY-YYYY', which is textual and should be stored as TEXT to preserve the format.
+
+9. Market_value: FLOAT or DECIMAL
+   - The 'Market_value' field is not provided with a specific format in the sample data (represented as 'nan'), which typically indicates a numerical value that could be a floating-point number. Since we cannot infer the exact format from 'nan', it is safe to use FLOAT or DECIMAL to accommodate potential decimal values.
+
+10. Transfer_fee: INTEGER
+    - The 'Transfer_fee' field contains whole numbers representing the fee for the player's transfer. Since there are no decimal points in the sample data, the INTEGER data type is suitable.
+
+It is important to note that the 'Market_value' field is represented as 'nan' in the sample data, which usually stands for 'not a number' and is often used to indicate missing or undefined values. In a database, this could be represented as a NULL value. However, since the data type prediction is based on the format present in the examples, and 'nan' does not provide a clear format, FLOAT or DECIMAL is chosen to allow for numerical values with potential decimals.
+
+
+
+Thought 2: Map the source schema to the target schema, considering any potential reserved keywords and the handling of date formats.
+
+Action 2:  Mapping[source_schema, target_schema]
+Observation 2:
+The mappings between the `source_schema` and `target_schema` are direct and one-to-one for each column, as follows:
+
+- 'Name' maps to 'Name'
+- 'Position' maps to 'Position'
+- 'Age' maps to 'Age'
+- 'Team_from' maps to 'Team_from'
+- 'League_from' maps to 'League_from'
+- 'Team_to' maps to 'Team_to'
+- 'League_to' maps to 'League_to'
+- 'Season' maps to 'Season'
+- 'Market_value' maps to 'Market_value'
+- 'Transfer_fee' maps to 'Transfer_fee'
+
+Each column in the source schema has a corresponding column with the same name in the target schema.
+
+
+Thought 3: Identify if any target columns are aggregates of source columns and consider any conditions or filters that need to be applied, especially related to date formats.
+
+Action 3:  Aggregation[source_schema, target_schema]
+Observation 3:
+No target columns are aggregates of source columns. The only transformation observed is the change in case for the 'Name' field.
+
+
+Thought 4: Identify if any conditions or filters need to be applied, especially related to date formats.
+
+Action 4:  Conditional[source_schema, target_schema, condition]
+Observation 4:
+Upon comparing the source and target schemas, it appears that the fields are identical in both name and order. Assuming that the data types and constraints are also compatible, no schema-level transformations are required. However, without specific business rules or additional context, it is not possible to determine if there are any conditional dependencies or filters that need to be applied to the data itself. If such conditions exist, they would need to be identified and applied during the data transformation process.
+
+
+Thought 5: Prepare the final transformation SQL code, ensuring the correct handling of date formats and any reserved keywords.
+
+Action 5:  Finish[transformation_sql_code]
+Observation 5:
+-- Assuming the CSV file has a header that matches the source schema column names
+-- and that empty values are represented as empty strings which should be treated as NULL
+
+-- Step 1: Drop the source table if it exists and create the new source table with appropriate data types
+DROP TABLE IF EXISTS "Source1_91_0";
+CREATE TABLE "Source1_91_0" (
+    "Name" TEXT,
+    "Position" TEXT,
+    "Age" INTEGER,
+    "Team_from" TEXT,
+    "League_from" TEXT,
+    "Team_to" TEXT,
+    "League_to" TEXT,
+    "Season" TEXT,
+    "Market_value" DECIMAL, -- DECIMAL is used to accommodate potential decimal values
+    "Transfer_fee" INTEGER
+);
+
+-- Step 2: Import data from the CSV file, treating empty strings as NULL
+COPY "Source1_91_0" FROM 'C:\PycharmProjects\ChatGPTwithSQLscript\react\github-pipelines\length1_91\test_0.csv' WITH (FORMAT csv, HEADER true, NULL '');
+
+-- Step 3: Drop the target table if it exists and create the new target table with appropriate data types
+DROP TABLE IF EXISTS "Target1_91";
+CREATE TABLE "Target1_91" (
+    "Name" TEXT,
+    "Position" TEXT,
+    "Age" INTEGER,
+    "Team_from" TEXT,
+    "League_from" TEXT,
+    "Team_to" TEXT,
+    "League_to" TEXT,
+    "Season" TEXT,
+    "Market_value" DECIMAL, -- DECIMAL is used to accommodate potential decimal values
+    "Transfer_fee" INTEGER
+);
+
+-- Step 4: Insert data into the target table from the source table
+-- Since the schemas are identical and no aggregation is required, we can directly insert the data
+INSERT INTO "Target1_91" (
+    "Name",
+    "Position",
+    "Age",
+    "Team_from",
+    "League_from",
+    "Team_to",
+    "League_to",
+    "Season",
+    "Market_value",
+    "Transfer_fee"
+)
+SELECT
+    "Name",
+    "Position",
+    "Age",
+    "Team_from",
+    "League_from",
+    "Team_to",
+    "League_to",
+    "Season",
+    "Market_value",
+    "Transfer_fee"
+FROM
+    "Source1_91_0";
+
+-- Step 5: Copy the result from the target table into a CSV file
+COPY (SELECT * FROM "Target1_91") TO 'C:\PycharmProjects\ChatGPTwithSQLscript\react\github-pipelines\length1_91\Target1_91_result.csv' WITH CSV HEADER;
+
+
+
+SQL Script Extracted from GPT Response:
+
+-- Assuming the CSV file has a header that matches the source schema column names
+-- and that empty values are represented as empty strings which should be treated as NULL
+
+-- Step 1: Drop the source table if it exists and create the new source table with appropriate data types
+DROP TABLE IF EXISTS "Source1_91_0";
+CREATE TABLE "Source1_91_0" (
+    "Name" TEXT,
+    "Position" TEXT,
+    "Age" INTEGER,
+    "Team_from" TEXT,
+    "League_from" TEXT,
+    "Team_to" TEXT,
+    "League_to" TEXT,
+    "Season" TEXT,
+    "Market_value" DECIMAL, -- DECIMAL is used to accommodate potential decimal values
+    "Transfer_fee" INTEGER
+);
+
+-- Step 2: Import data from the CSV file, treating empty strings as NULL
+COPY "Source1_91_0" FROM 'C:\PycharmProjects\ChatGPTwithSQLscript\react\github-pipelines\length1_91\test_0.csv' WITH (FORMAT csv, HEADER true, NULL '');
+
+-- Step 3: Drop the target table if it exists and create the new target table with appropriate data types
+DROP TABLE IF EXISTS "Target1_91";
+CREATE TABLE "Target1_91" (
+    "Name" TEXT,
+    "Position" TEXT,
+    "Age" INTEGER,
+    "Team_from" TEXT,
+    "League_from" TEXT,
+    "Team_to" TEXT,
+    "League_to" TEXT,
+    "Season" TEXT,
+    "Market_value" DECIMAL, -- DECIMAL is used to accommodate potential decimal values
+    "Transfer_fee" INTEGER
+);
+
+-- Step 4: Insert data into the target table from the source table
+-- Since the schemas are identical and no aggregation is required, we can directly insert the data
+INSERT INTO "Target1_91" (
+    "Name",
+    "Position",
+    "Age",
+    "Team_from",
+    "League_from",
+    "Team_to",
+    "League_to",
+    "Season",
+    "Market_value",
+    "Transfer_fee"
+)
+SELECT
+    "Name",
+    "Position",
+    "Age",
+    "Team_from",
+    "League_from",
+    "Team_to",
+    "League_to",
+    "Season",
+    "Market_value",
+    "Transfer_fee"
+FROM
+    "Source1_91_0";
+
+-- Step 5: Copy the result from the target table into a CSV file
+COPY (SELECT * FROM "Target1_91") TO 'C:\PycharmProjects\ChatGPTwithSQLscript\react\github-pipelines\length1_91\Target1_91_result.csv' WITH CSV HEADER;
+
+
+True
+[Success] Successful SQL execution with correct result.
+All similarity scores saved to all_similarity_scores.log.
+
+Process finished with exit code 0

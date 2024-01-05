@@ -24,16 +24,25 @@ def convert_if_number(s):
         return s
 
 def are_elements_equal(elem1, elem2, tolerance=1e-8):
-    if elem1 is None or elem2 is None:
-        return elem1 is None and elem2 is None
+    # Convert None to an empty string for comparison
+    if elem1 is None:
+        elem1 = ''
+    if elem2 is None:
+        elem2 = ''
+
+    # Convert elements to numbers if possible
     elem1, elem2 = convert_if_number(elem1), convert_if_number(elem2)
 
+    # Compare floats with tolerance
     if isinstance(elem1, float) and isinstance(elem2, float):
         return abs(elem1 - elem2) < tolerance
+    # Compare strings (including empty strings) in a case-insensitive manner
     elif isinstance(elem1, str) and isinstance(elem2, str):
         return elem1.strip().lower() == elem2.strip().lower()
+    # Compare other types directly
     else:
         return elem1 == elem2
+
 
 def tuple_similarity(t1, t2):
     if len(t1) != len(t2):
@@ -63,7 +72,7 @@ def calculate_column_similarities(matched_tuples, list1, list2):
 
 def compare_lists_matching(list1, list2):
     if not list1 or not list2 or len(list1) != len(list2):
-        return 0, False, ["missmatch"], ["Mismatch - Lists lengths differ"]
+        return 0, False, ["missmatch"], [f"Mismatch - Lists lengths differ ({len(list1)} vs {len(list2)})"]
 
     # Create a similarity matrix
     similarity_matrix = np.zeros((len(list1), len(list2)))
@@ -157,7 +166,7 @@ def main(
     max_source_id,
     source_id=0,
     oneshot_source_id=0,
-    max_iterations=1,
+    max_iterations=2,
     json_file_path='./data/chatgpt.json',
     clarify_on=False,
 ):
@@ -180,6 +189,7 @@ def main(
         validation_table_created = False
         ground_truth_sql_result = None
         accuracy_list = []
+        sql_errors = ['']
         # Run the experiment
         while True:
             iteration_count += 1
@@ -202,7 +212,8 @@ def main(
             # interact with gpt
             #　Create agnet
             agent = Agent(source_name, target_name, test_0_path, source_data_schema_list, target_data_schema, source_samples_list, target_samples, result_path, clarify_on=clarify_on)
-
+            agent.prompt = agent.prompt + f"\n\nFix the following Error: {sql_errors[-1]}\n" if sql_errors[-1] != '' else agent.prompt
+            #　Run agent
             gpt_output = agent.run()[0]
             print("SQL Script Extracted from GPT Response:")
             print(gpt_output)
@@ -211,12 +222,14 @@ def main(
             sql_result = execute_sql(conn, gpt_output)
             #print(f"SQL Result: {sql_result}")
             if "Error:" in sql_result:
-                print( f"\n Error in the previous response: {sql_result}")
+                print( f"\n iter{iteration_count} Error in the previous response: {sql_result}")
                 with open('log/all_similarity_scores.log', 'a+') as file:
                     file.write(f"{target_data_name} <- {source_data_name_list}")
                     file.write(f"\t\t\t\t[Failed]\n\tError in the previous response: {sql_result}\n")
                 accuracy_list.append(0.0)
-                break
+                #break
+                sql_errors.append(sql_result)
+                continue
 
             ground_truth_table = []
             # SQL script returned by ChatGPT is executed correctly
@@ -256,4 +269,4 @@ if __name__ == "__main__":
     source_id, max_source_id = 0, 0
     print_experiment_settings(len_id, max_len_id, target_id, max_target_id, clarify_on=False)
     oneshot_source_id = 0 # Set to 0 to disable oneshot
-    main(max_len_id, len_id, max_target_id, target_id, max_source_id, source_id=0, oneshot_source_id=0, max_iterations=1, json_file_path='data/chatgpt.json', clarify_on=False, )
+    main(max_len_id, len_id, max_target_id, target_id, max_source_id, source_id=0, oneshot_source_id=0, max_iterations=5, json_file_path='data/chatgpt.json', clarify_on=False, )

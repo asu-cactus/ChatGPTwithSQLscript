@@ -67,10 +67,13 @@ def get_test_cases_ids(json_file_path, len_id, max_len_id, target_id, max_target
     finish_issue = ['Target1_27', 'Target1_46', 'Target1_97'] # 27, 46, 97
     further_finish_issue = ['Target1_97']
     with_dirty_rows = ['Target1_40', 'Target1_59']
+    with_similarity_issue = ['Target1_10']#, 'Target1_23', 'Target1_62', 'Target1_86', 'Target1_97']
+    with_syntax_issue = ['Target1_44', 'Target1_78', 'Target1_88', 'Target1_89', 'Target1_90', 'Target1_91', 'Target1_92', 'Target1_93']
+
     print('Total number of test cases:', len(filtered_ids))
     print('Number of test cases that have been tested at least once:', len(past_at_least_once))
     #print('Number of bad test cases:', len(bad_ids))
     #filtered_ids = [id for id in filtered_ids if id not in bad_ids]
     filtered_ids = [id for id in filtered_ids if id not in past_at_least_once]
     print('Number of Test cases after filtering:', len(filtered_ids))
-    return with_dirty_rows
+    return ['Target1_99']
