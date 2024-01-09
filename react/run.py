@@ -145,8 +145,7 @@ def main(
             print(f"*** itr {iteration_count} ***")
 
             sub_folder_name = f"length{len_id_target_id}"
-            #main_folder_name = os.path.abspath("github-pipelines")
-            main_folder_name = os.path.abspath("/tmp/github-pipelines")  # Changed to point to /tmp for mac
+            main_folder_name = os.path.abspath("github-pipelines")
             target_path = os.path.join(main_folder_name, sub_folder_name, f"target.csv")
             test_0_path = os.path.join(main_folder_name, sub_folder_name, f"test_0.csv")
             result_path = os.path.join(main_folder_name, sub_folder_name, '')
