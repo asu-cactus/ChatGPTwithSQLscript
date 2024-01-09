@@ -26,8 +26,15 @@ def access_auto_pipeline_dataset(sub_folder_name):
     sub_folder = f"{main_folder_name}\{sub_folder_name}\\"
     test_0 = f"{sub_folder}test_0.csv"
     test_1 = f"{sub_folder}test_1.csv"
+    test_2 = f"{sub_folder}test_2.csv"
+    test_3 = f"{sub_folder}test_3.csv"
+    test_4 = f"{sub_folder}test_4.csv"
+    test_5 = f"{sub_folder}test_5.csv"
+    test_6 = f"{sub_folder}test_6.csv"
+    test_7 = f"{sub_folder}test_7.csv"
+    test_8 = f"{sub_folder}test_8.csv"
     target = f"{sub_folder}target.csv"
-    return main_folder_name,sub_folder, test_0, test_1, target
+    return main_folder_name,sub_folder, test_0, test_1, test_2,test_3,test_4,test_5,test_6,test_7,test_8, target
 
 def read_csv_target(target):
     gold_target = []

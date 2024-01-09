@@ -4,6 +4,8 @@ import psycopg2
 import csv
 import re
 import logging
+import pandas as pd
+import datetime
 
 def read_csv_file(file_path):
     with open(file_path, 'r') as file:
@@ -31,13 +33,18 @@ def extract_target_table_name(sql_query):
         return create_matches[2]  # Return the third occurrence of CREATE TABLE
 
     # Match the target table name after the "INSERT INTO" statement
-    insert_match = re.search(r'INSERT\s+INTO\s+(\w+)', sql_query, re.IGNORECASE)
+    insert_match = re.search(r'(CREATE\s+TABLE\s+\w+.*?){3}|INSERT\s+INTO\s+(\w+)', sql_query, re.IGNORECASE)
 
     if insert_match:
-        return insert_match.group(1)  # Return the captured group (table name) after INSERT INTO
+        # If the match is from the "CREATE TABLE" group, return the captured group (table name) after CREATE TABLE
+        if insert_match.group(1):
+            create_table_match = re.search(r'CREATE\s+TABLE\s+(\w+)', insert_match.group(1), re.IGNORECASE)
+            if create_table_match:
+                return create_table_match.group(1)
 
-    return None  # Return None if no match is found
-
+        # If the match is from the "INSERT INTO" group, return the captured group (table name) after INSERT INTO
+        elif insert_match.group(2):
+            return insert_match.group(2)    
 
 def execute_sql(conn, query):
     cursor = conn.cursor()
@@ -49,6 +56,7 @@ def execute_sql(conn, query):
 
         # Check if the operation is not a SELECT statement
         if not query.strip().upper().startswith("SELECT"):
+            logging.info(f"query to be parsed {query}")
             target_table = extract_target_table_name(query)
             if target_table:
                 # Fetch results from the last inserted table
@@ -66,20 +74,6 @@ def execute_sql(conn, query):
     except psycopg2.Error as e:
         conn.rollback()  # Rollback the transaction on error
         return f"Error: {e.pgerror}"
-
-
-# def create_table(conn, create_statement):
-#     print(create_statement)
-#     cursor = conn.cursor()
-#     try:
-#         cursor.execute("BEGIN;")
-#         cursor.execute(create_statement)
-#         # Assuming you want to commit after every SQL execution for simplicity
-#         conn.commit()
-#     except psycopg2.Error as e:
-#         conn.rollback()  # Rollback the transaction on error
-#         return f"Error: {e.pgerror}"
-
 
 def print_experiment_settings(template_option, target_id, max_target_id, source_id, max_source_id):
     with open('all_similarity_scores.log', 'a+') as file:
@@ -122,16 +116,50 @@ def log_experiment_success(target_data_name, source_data_name_to_find, iteration
 
 def numerical_similarity(value1, value2, threshold=1e-10):
     """ Calculate numerical similarity between two values. """
-    if value1 in (0.0, None) and value2 in (0.0, None):
+    if pd.isna(value1) and pd.isna(value2):
         return 1.0
+
     try:
-        float_value1 = float(set(value1))
-        float_value2 = float(set(value2))
+        if isinstance(value1, pd.Series):
+            value1 = value1.iloc[0]  # Extract the first element if it's a Series
+
+        if isinstance(value2, pd.Series):
+            value2 = value2.iloc[0]  # Extract the first element if it's a Series
+
+        numeric_value1 = pd.to_numeric(value1, errors='coerce')
+        numeric_value2 = pd.to_numeric(value2, errors='coerce')
+
+        if pd.api.types.is_integer_dtype(numeric_value1) or pd.api.types.is_float_dtype(numeric_value1):
+            float_value1 = float(numeric_value1)
+        else:
+            return 0.0
+
+        if pd.api.types.is_integer_dtype(numeric_value2) or pd.api.types.is_float_dtype(numeric_value2):
+            float_value2 = float(numeric_value2)
+        else:
+            return 0.0
+
         return 1.0 if abs(float_value1 - float_value2) <= threshold else 0.0
     except (ValueError, TypeError):
         return 0.0
 
+def object_similarity(obj1, obj2, threshold=1e-10):
+    """ Calculate similarity between two objects. """
+    if obj1 == obj2:
+        return 1.0
 
+    try:
+        # Attempt to convert objects to float
+        float_value1 = float(obj1)
+        float_value2 = float(obj2)
+
+        # Check numerical similarity
+        return 1.0 if abs(float_value1 - float_value2) <= threshold else 0.0
+
+    except (ValueError, TypeError):
+        # If conversion to float fails, check if the objects are equal
+        return 1.0 if obj1 == obj2 else 0.0
+    
 def calculate_similarity(column_a, column_b, similarity_type="numerical", threshold=1e-10):
     """ Calculate similarity between two columns based on specified similarity type. """
     if similarity_type == "numerical":
@@ -141,6 +169,9 @@ def calculate_similarity(column_a, column_b, similarity_type="numerical", thresh
         intersection = len(set(column_a) & set(column_b))
         union = len(set(column_a) | set(column_b))
         return intersection / union if union else 0
+    elif similarity_type == "object":
+        scores = [object_similarity(val1, val2, threshold) for val1, val2 in zip(column_a, column_b)]
+        return sum(scores) / len(scores)
     else: # Not used in the current version
         vectorizer = CountVectorizer().fit_transform(column_a + column_b)
         return cosine_similarity(vectorizer[:len(column_a)], vectorizer[len(column_a):])[0, 0]
