@@ -5,15 +5,8 @@ from parse_json import get_test_info, get_test_cases_ids
 from agent import Agent
 import os
 import csv
+import pandas as pd
 
-import numpy as np
-from scipy.optimize import linear_sum_assignment
-
-def are_numerically_close(num1, num2, tolerance=1e-8):
-    return abs(num1 - num2) < tolerance
-
-def are_strings_similar(str1, str2):
-    return str1.strip().lower() == str2.strip().lower()
 
 def convert_if_number(s):
     if s is None:
@@ -24,139 +17,89 @@ def convert_if_number(s):
         return s
 
 def are_elements_equal(elem1, elem2, tolerance=1e-8):
-    # Convert None to an empty string for comparison
-    if elem1 is None:
-        elem1 = ''
-    if elem2 is None:
-        elem2 = ''
-
-    # Convert elements to numbers if possible
+    elem1 = '' if elem1 is None else elem1
+    elem2 = '' if elem2 is None else elem2
     elem1, elem2 = convert_if_number(elem1), convert_if_number(elem2)
-
-    # Compare floats with tolerance
     if isinstance(elem1, float) and isinstance(elem2, float):
         return abs(elem1 - elem2) < tolerance
-    # Compare strings (including empty strings) in a case-insensitive manner
     elif isinstance(elem1, str) and isinstance(elem2, str):
         return elem1.strip().lower() == elem2.strip().lower()
-    # Compare other types directly
     else:
         return elem1 == elem2
 
+def numerical_similarity(num1, num2, threshold=1e-8):
+    return abs(num1 - num2) < threshold
 
-def tuple_similarity(t1, t2):
-    if len(t1) != len(t2):
-        return 0, ["Mismatch - Tuple lengths differ"]
+def compare_columns(column_a, column_b, similarity_type="jaccard", threshold=1e-8):
+    if similarity_type == "numerical":
+        scores = [numerical_similarity(float(val1), float(val2), threshold) for val1, val2 in zip(column_a, column_b)]
+        return sum(scores) / len(scores)
+    elif similarity_type == "jaccard":
+        intersection = len(set(column_a) & set(column_b))
+        union = len(set(column_a) | set(column_b))
+        return intersection / union if union else 0
 
-    matching_elements = 0
-    mismatches = []
-    for index, (e1, e2) in enumerate(zip(t1, t2)):
-        if are_elements_equal(e1, e2):
-            matching_elements += 1
-        else:
-            mismatches.append(f"Column {index + 1}: {e1} vs {e2}")
+# Convert list of tuples to sorted DataFrame
+def convert_to_sorted_df(lst):
+    column_names = [f"Column{i+1}" for i in range(len(lst[0]))]
+    df = pd.DataFrame(lst, columns=column_names)
 
-    similarity = matching_elements / len(t1) if t1 else 0
-    return similarity, mismatches
+    # Sort by all columns
+    sorted_df = df.sort_values(by=list(df.columns))
+    return sorted_df
 
-def calculate_column_similarities(matched_tuples, list1, list2):
-    num_columns = len(list1[0])
-    column_similarities = [0] * num_columns
+def is_column_numerical(column):
+    # Expanded check for numerical types including unsigned integers
+    return column.dtype.kind in 'fiu' or pd.to_numeric(column, errors='coerce').notna().all()
 
-    for r, c in matched_tuples:
-        for i in range(num_columns):
-            if are_elements_equal(list1[r][i], list2[c][i]):
-                column_similarities[i] += 1
 
-    return [sim / len(list1) for sim in column_similarities]
+def is_column_numerical(column):
+    try:
+        # Attempt to convert the column to a numeric type
+        pd.to_numeric(column, errors='raise')
+        return True
+    except ValueError:
+        # If ValueError is raised, the conversion failed, indicating non-numerical values
+        return False
 
+# Main Comparison Function
 def compare_lists_matching(list1, list2):
-    if not list1 or not list2 or len(list1) != len(list2):
-        return 0, False, ["missmatch"], [f"Mismatch - Lists lengths differ ({len(list1)} vs {len(list2)})"]
+    df1 = convert_to_sorted_df(list1)
+    df2 = convert_to_sorted_df(list2)
 
-    # Create a similarity matrix
-    similarity_matrix = np.zeros((len(list1), len(list2)))
-    mismatch_details = {}
+    if len(df1.columns) == 0 or len(df2.columns) == 0:
+        return 0, False, [], ["Mismatch - No columns in one or both DataFrames"]
 
-    for i, t1 in enumerate(list1):
-        for j, t2 in enumerate(list2):
-            similarity, mismatches = tuple_similarity(t1, t2)
-            similarity_matrix[i][j] = similarity
-            if mismatches:
-                mismatch_details[(i, j)] = mismatches
+    if len(df1) != len(df2):
+        return 0, False, [], [f"Mismatch - DataFrames lengths differ ({len(df1)} vs {len(df2)})"]
 
-    # Find the optimal matching using the Hungarian algorithm
-    row_ind, col_ind = linear_sum_assignment(-similarity_matrix)
-    total_similarity = similarity_matrix[row_ind, col_ind].sum()
-    matched_tuples = list(zip(row_ind, col_ind))
-
-    # Calculate column-wise similarities based on matched tuples
-    column_similarities = calculate_column_similarities(matched_tuples, list1, list2)
-
-    # Collect mismatch information
+    similarities = []
     all_mismatches = []
-    for r, c in matched_tuples:
-        if (r, c) in mismatch_details:
-            all_mismatches.extend(mismatch_details[(r, c)])
 
-    average_similarity = total_similarity / len(list1)
+    for col in df1.columns:
+        column_a = df1[col].tolist()
+        column_b = df2[col].tolist()
+
+        # Determine the similarity type (numerical or Jaccard)
+
+        column_a = df1[col].tolist()
+        column_b = df2[col].tolist()
+
+        # Determine if the column is numerical
+        is_numerical = is_column_numerical(df1[col])
+        similarity_type = "numerical" if is_numerical else "jaccard"
+
+        column_similarity = compare_columns(column_a, column_b, similarity_type)
+        similarities.append(column_similarity)
+
+        if column_similarity < 1:
+            mismatches = [(i, column_a[i], column_b[i]) for i in range(len(column_a)) if not are_elements_equal(column_a[i], column_b[i])]
+            all_mismatches.append((col, mismatches))
+
+    average_similarity = sum(similarities) / len(df1.columns)
     res = average_similarity == 1
 
-    return average_similarity, res, column_similarities, all_mismatches
-
-def validation(sql_result, ground_truth, tolerance=1e-10):
-    validation_error = ""
-
-    if len(sql_result) != len(ground_truth) or len(sql_result[0]) != len(ground_truth[0]):
-        validation_error = "Different number of rows or columns in the results and ground truth."
-        return 0.0, False, ["missmatch"], validation_error
-
-    # Initialize a list to store similarity scores
-    similarity_scores = []
-    fully_matched_columns_num = 0  # Counter for columns that matched perfectly
-
-    res = True
-    # Iterate through columns and compare
-    for col_index in range(len(sql_result[0])):
-        sql_column = [str(row[col_index]) if row[col_index] is not None else '0.0' for row in sql_result]
-        truth_column = [str(row[col_index]) if row[col_index] is not None else '0.0' for row in ground_truth]
-
-        # Determine whether columns can be treated as numerical
-        is_sql_numeric = True
-        is_truth_numeric = True
-
-        try:
-            float(sql_column[0])  # Try converting the first value
-        except (ValueError, TypeError):
-            is_sql_numeric = False
-
-        try:
-            float(truth_column[0])
-        except (ValueError, TypeError):
-            is_truth_numeric = False
-
-        if is_sql_numeric and is_truth_numeric:
-            similarity_type = "numerical"
-        else:
-            similarity_type = "jaccard"
-
-        similarity_score = calculate_similarity(sql_column, truth_column, similarity_type=similarity_type,
-                                                threshold=tolerance)
-
-        if similarity_score == 1:
-            fully_matched_columns_num += 1
-        elif similarity_score < 1:
-            validation_error += f"the {col_index}-th column does not match; "
-            res = False
-
-        # Append the similarity score for this column
-        similarity_scores.append(similarity_score)
-
-    case_accuracy = fully_matched_columns_num / len(sql_result[0])
-    print("Similarity scores for this iteration:", similarity_scores)
-
-    # Returning both the result of strict validation, the similarity scores, and the global accuracy
-    return case_accuracy, res, similarity_scores, validation_error
+    return average_similarity, res, similarities, all_mismatches
 
 def main(
     max_len_id,
@@ -202,7 +145,8 @@ def main(
             print(f"*** itr {iteration_count} ***")
 
             sub_folder_name = f"length{len_id_target_id}"
-            main_folder_name = os.path.abspath("github-pipelines")
+            #main_folder_name = os.path.abspath("github-pipelines")
+            main_folder_name = os.path.abspath("/tmp/github-pipelines")  # Changed to point to /tmp for mac
             target_path = os.path.join(main_folder_name, sub_folder_name, f"target.csv")
             test_0_path = os.path.join(main_folder_name, sub_folder_name, f"test_0.csv")
             result_path = os.path.join(main_folder_name, sub_folder_name, '')

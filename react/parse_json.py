@@ -76,4 +76,4 @@ def get_test_cases_ids(json_file_path, len_id, max_len_id, target_id, max_target
     #filtered_ids = [id for id in filtered_ids if id not in bad_ids]
     filtered_ids = [id for id in filtered_ids if id not in past_at_least_once]
     print('Number of Test cases after filtering:', len(filtered_ids))
-    return ['Target1_99']
+    return ['Target1_6']

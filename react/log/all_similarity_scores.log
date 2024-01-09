@@ -777,3 +777,95 @@ Target1_99 <- ['Source1_99_0']				[Failed]
 		 iter-1: missmatch
 		 iter-2: missmatch
 				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Error in the previous response: Error: ERROR:  could not open file "/Users/gsun20/Desktop/projects/cactus/ChatGPTwithSQLscript/react/github-pipelines/length1_99/test_0.csv" for reading: Permission denied
+HINT:  COPY FROM instructs the PostgreSQL server process to read a file. You may want a client-side facility such as psql's \copy.
+
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: missmatch
+		 iter-2: missmatch
+		 iter-3: missmatch
+		 iter-4: missmatch
+				Case accuracy: 0.00
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Error in the previous response: Error: ERROR:  could not open file "/Users/gsun20/Desktop/projects/cactus/ChatGPTwithSQLscript/react/github-pipelines/length1_99/test_0.csv" for reading: Permission denied
+HINT:  COPY FROM instructs the PostgreSQL server process to read a file. You may want a client-side facility such as psql's \copy.
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Error in the previous response: Error: ERROR:  could not open file "/Users/gsun20/Desktop/projects/cactus/ChatGPTwithSQLscript/react/github-pipelines/length1_99/test_0.csv" for reading: Permission denied
+HINT:  COPY FROM instructs the PostgreSQL server process to read a file. You may want a client-side facility such as psql's \copy.
+
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Error in the previous response: Error: ERROR:  syntax error at or near "Invalid"
+LINE 1: Invalid action: Action 1: TypePredict[source_examples, targe...
+        ^
+
+Target1_99 <- ['Source1_99_0']				[Failed]
+	Error in the previous response: Error: ERROR:  could not open file "/Users/gsun20/Desktop/projects/cactus/ChatGPTwithSQLscript/react/github-pipelines/length1_99/test_0.csv" for reading: Permission denied
+HINT:  COPY FROM instructs the PostgreSQL server process to read a file. You may want a client-side facility such as psql's \copy.
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_6 <- ['Source1_6_0']				[Failed]
+	Error in the previous response: Error: ERROR:  could not open file "/Users/gsun20/Desktop/projects/cactus/ChatGPTwithSQLscript/react/github-pipelines/length1_6/test_0.csv" for reading: Permission denied
+HINT:  COPY FROM instructs the PostgreSQL server process to read a file. You may want a client-side facility such as psql's \copy.
+
+Target1_6 <- ['Source1_6_0']				[Failed]
+	Please check the similarity scores:
+		 iter-1: [Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_6 <- ['Source1_6_0']				[Failed]
+	Error in the previous response: Error: ERROR:  could not open file "/Users/gsun20/Desktop/projects/cactus/ChatGPTwithSQLscript/react/github-pipelines/length1_6/test_0.csv" for reading: Permission denied
+HINT:  COPY FROM instructs the PostgreSQL server process to read a file. You may want a client-side facility such as psql's \copy.
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_6 <- ['Source1_6_0']				[Failed]
+	Error in the previous response: Error: ERROR:  could not open file "/Users/gsun20/Desktop/projects/cactus/ChatGPTwithSQLscript/react/github-pipelines/length1_6/test_0.csv" for reading: Permission denied
+HINT:  COPY FROM instructs the PostgreSQL server process to read a file. You may want a client-side facility such as psql's \copy.
+
+Target1_6 <- ['Source1_6_0']				[Failed]
+	Error in the previous response: Error: ERROR:  syntax error at or near "\"
+LINE 23: \copy "Source1_6_0" FROM '/Users/gsun20/Desktop/projects/cac...
+         ^
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_6 <- ['Source1_6_0']				[Failed]
+	Error in the previous response: Error: ERROR:  could not open file "/Users/gsun20/Desktop/projects/cactus/ChatGPTwithSQLscript/react/github-pipelines/length1_6/test_0.csv" for reading: Permission denied
+HINT:  COPY FROM instructs the PostgreSQL server process to read a file. You may want a client-side facility such as psql's \copy.
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_6 <- ['Source1_6_0']				[Failed]
+	Error in the previous response: Error: ERROR:  could not open file "/tmp/github-pipelines/length1_6/Target1_6_result.csv" for writing: Permission denied
+HINT:  COPY TO instructs the PostgreSQL server process to write a file. You may want a client-side facility such as psql's \copy.
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_6 <- ['Source1_6_0']				[Failed]
+	Error in the previous response: Error: ERROR:  could not open file "/tmp/github-pipelines/length1_6/Target1_6_result.csv" for writing: Permission denied
+HINT:  COPY TO instructs the PostgreSQL server process to write a file. You may want a client-side facility such as psql's \copy.
+
+[Clarify Off]
+Scope: length is 1, target in [1, 99]
+Target1_6 <- ['Source1_6_0']				[Failed]
+	Error in the previous response: Error: ERROR:  could not open file "/tmp/github-pipelines/length1_6/Target1_6_result.csv" for writing: Permission denied
+HINT:  COPY TO instructs the PostgreSQL server process to write a file. You may want a client-side facility such as psql's \copy.
+
+Target1_6 <- ['Source1_6_0']				[Failed]
+	Error in the previous response: Error: ERROR:  syntax error at or near "\"
+LINE 61: \copy (SELECT * FROM "Target1_6") TO '/tmp/github-pipelines/...
+         ^
+
